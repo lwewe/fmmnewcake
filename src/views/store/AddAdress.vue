@@ -1,0 +1,1914 @@
+<template>
+  <div class="conPage">
+   <div class="jd-style-address-picker"  @click="golocation()">
+<div id="container" ref="mapContainer" class="map-container"></div>
+<div class="map-mask" @click="golocation()"></div>
+   </div> 
+
+    <div style="position: absolute;bottom: 0;left: 0;background-color: #ffffff;padding-bottom: 160px;">
+      <div class="addressBox">
+
+        <div class="consignee2 dtbg"  >
+          <div class="consignee" style="border-bottom: none">
+            <div class="consigneeText">地址</div>
+            <div class="inpBox selectAddress" @click="golocation()"
+              style="height: 50px;display: flex;align-items: center;">
+              <span style="color: #d54342;font-size: 16px;font-weight: bold;" v-if="!$store.state.address">选择收货地址</span>
+              <span v-else>{{ $store.state.address }}</span>
+            </div>
+            <div>
+              <van-icon name="arrow" />
+            </div>
+          </div>
+          <!-- <div style="font-size: 16px;color: #E36261;font-weight: bold;">注:选择地址必须精确到小区或写字楼</div> -->
+        </div>
+        <div class="consignee consignee2">
+          <div class="consigneeText">门牌号</div>
+          <div class="inpBox">
+            <input class="inp" v-model="door" type="text" placeholder="输入详细地址，例1号楼1单元1201">
+          </div>
+        </div>
+        <div class="consignee">
+          <div class="consigneeText">联系人</div>
+          <div class="inpBox">
+            <input class="inp" v-model="name" type="text" placeholder="输入收货人姓名">
+          </div>
+          <div class="sex">
+            <button :class="{ sexoption2: item.id == sex1 }" @click="sex(item.id)" v-for="item in sexList"
+              :key="item.id">
+              {{ item.text }}
+            </button>
+          </div>
+
+        </div>
+        <!-- <div class="consignee sex">
+        <div class="consigneeText ">性别</div>
+        <div class="inpBox">
+          <button :class="{ sexoption2: item.id == sex1 }" @click="sex(item.id)" v-for="item in sexList" :key="item.id">
+            {{ item.text }}
+          </button>
+        </div>
+      </div> -->
+        <div class="consignee consignee2">
+          <div class="consigneeText">手机号</div>
+          <div class="inpBox" style="position: relative;">
+            <span style="position: absolute;font-size: 11px;color: red;bottom: -15px;" v-if="telflag">输入正确的手机号码</span>
+            <input class="inp" v-model="tel" type="number" placeholder="输入收货人手机号码">
+          </div>
+
+
+
+        </div>
+
+
+      </div>
+      <!--    保存地址-->
+      <div class="addNewAddress">
+        <div class="btn" @click="saveaddress()">{{ btntext }}</div>
+      </div>
+
+      <!--    当前定位的弹窗-->
+      <div class="popupBox2">
+        <van-popup v-model="showAddress" position="top">
+          <div class="popup">
+            <div class="brandBox" style="margin: 0;">
+              <div>{{ address }}</div>
+            </div>
+            <div class="retractBox">
+              <div class="retract" @click="cancellation">取消</div>
+              <div class="retract retract2" @click="filling">填入</div>
+            </div>
+          </div>
+        </van-popup>
+      </div>
+
+
+    </div>
+
+
+
+  </div>
+</template>
+<script>
+import { getAddressAdd, getAddressEdit, showdcaddress } from '@/api/service'
+import { getAddressAdds, getAddressEdits } from "@/api/address";
+import { Toast } from 'vant'
+import wx from "weixin-js-sdk";
+import { getLocations } from "@/api/city";
+export default {
+  name: "AddAdress",
+  data() {
+    return {
+      checked: false,
+      labelText: "",
+      labelColor: "",
+      labelColor2: "",
+      labelList: [
+        {
+          id: 1,
+          text: "家",
+          checked: false
+        }, {
+          id: 2,
+          text: "公司",
+          checked: false
+        }, {
+          id: 3,
+          text: "学校",
+          checked: false
+        },
+      ],
+      sexList: [
+        {
+          id: 0,
+          text: "先生",
+        }, {
+          id: 1,
+          text: "女士",
+        },
+      ],
+      selectId: 0,
+      isAdd: false,
+      isExit: false,
+      Color: "",
+      isChange: false,
+      showAddress: false,
+      address: "休门街（北国商城地铁站C2西南口步行360米)蓝拓商务中心",
+      detailAddress: "",
+      isCancel: false,
+      btntext: "保存地址",
+
+      telflag: false,
+      name: "", //收货人姓名
+      tel: "",
+      door: "",  //门牌号
+      sex1: null,
+      // 修改地址
+      changelist: [],
+      address_id: "",
+      uid: "",
+      addId: "",
+      num1: "",
+
+
+      // ff
+
+      map: null,
+      BMap: null,
+      geocoder: null, rectangleOverlay: null, // 长方形覆盖物引用
+
+    
+
+      currentPosition: { lng: sessionStorage.getItem("longitude"), lat: sessionStorage.getItem("latitude") },
+      selectedPosition: { lng: 0, lat: 0 },
+      currentCity: '北京市',
+
+      // 地址数据
+      nearbyAddresses: [],
+      selectedAddressId: null,
+      selectedAddress: null,
+
+      // 搜索相关
+      searchKeyword: '',
+      isSearching: false,
+      searchResults: [],
+      searchTimer: null,
+
+      // 定位状态
+      isLoading: false,
+
+      // 默认地址（备用）
+      defaultAddresses: [
+        {
+          id: '',
+          title: '',
+          address: '',
+          province: '北京市',
+          city: '北京市',
+          district: '',
+          point: { lng: sessionStorage.getItem("longitude"), lat: sessionStorage.getItem("latitude") }
+        }
+      ],  addressMarker: null, // 添加这行，用于保存地址标记
+      // ff
+    }
+  },
+  watch: {
+    tel() {
+      // console.log("aaa");
+      var reg_tel = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/;
+      if ((!reg_tel.test(this.tel))) {
+        this.telflag = true
+      } else {
+        this.telflag = false
+      }
+    }
+  },
+  destroyed() {
+    sessionStorage.removeItem("editaddress")
+    sessionStorage.removeItem("num")
+  },
+  beforeDestroy() {
+    // sessionStorage.removeItem("cityName")
+    // sessionStorage.removeItem("targetId")
+  },
+  methods: {
+    saveaddress() {
+      // 添加地址
+      // if(this.num1==3){
+      this.BskAddressAdd()
+      // return
+      // }
+      // this.AddressAdd()
+    },
+    sex(id) {
+      this.sex1 = id
+    },
+
+    AddressAdd() {
+      let data = {
+        contact: this.name,
+        gender: this.sex1,
+        phone: this.tel,
+        addr: this.$store.state.address,
+        number: this.door,
+        lat: this.$store.state.lat,
+        lon: this.$store.state.lng,
+      }
+      console.log(data)
+      // return
+      if (this.addId) {
+        getAddressEdit({ ...data, id: this.addId }).then(res => {
+          this.$toast(res.msg || res.data)
+          if (res.code == 200) {
+            // console.log(res);
+            this.$router.go(-1)
+            sessionStorage.removeItem("addressData")
+          }
+        })
+      } else {
+        getAddressAdd(data).then(res => {
+          this.$toast(res.msg || res.data)
+          if (res.code == 200) {
+            // console.log(res);
+            this.$router.go(-1)
+            sessionStorage.removeItem("addressData")
+          }
+        })
+      }
+    },
+    BskAddressAdd() {
+      if (this.name == "") {
+        this.$toast("请输入收货人")
+        return;
+      }
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(this.tel)) {
+        this.$toast("请正确输入手机号")
+        return
+      }
+
+      if (this.$store.state.address == "") {
+        this.$toast("请选择地址")
+        return;
+      }
+      if (this.door == "") {
+        this.$toast("请输入门牌号")
+        return;
+      }
+      let data = {
+        apikey: this.$store.state.appkey,
+        uid: this.uid,
+        area: this.$store.state.address,
+        address: this.$store.state.address,
+        detail: this.door,
+        sex: this.sex1 + 1,
+        mobile: this.tel,
+        receiver: this.name,
+        lng: this.$store.state.lng,
+        lat: this.$store.state.lat,
+      }
+      // console.log(data)
+      // return
+      if (this.addId) {
+        getAddressEdits({ ...data, address_id: this.addId }).then(res => {
+          this.$toast(res.msg || res.data)
+          if (res.code == 200) {
+            // console.log(res);
+            this.$router.go(-1)
+            sessionStorage.removeItem("addressData")
+          }
+        })
+      } else {
+        getAddressAdds(data).then(res => {
+          this.$toast(res.msg || res.data)
+          if (res.code == 200) {
+            // console.log(res);
+            this.$router.go(-1)
+            sessionStorage.removeItem("addressData")
+          }
+        })
+      }
+    },
+    golocation() {
+      let data = {
+        name: this.name,
+        tel: this.tel,
+        door: this.door,
+        sex1: this.sex1
+      }
+      sessionStorage.setItem("addressData", JSON.stringify(data))
+      // sessionStorage.removeItem("cityName")
+      this.$router.push("/locationcity")
+    },
+    changeLabel() {
+      if (this.labelText != "") {
+        this.labelColor = "#DF5756"
+      } else {
+        this.labelColor = "#EAEAEA"
+      }
+    },
+    changeSelect(id) {
+      this.isChange = false
+      if (!this.isChange && this.isExit) {
+        this.labelColor = "#2D2D2D"
+        this.labelColor2 = "#F6F6F6"
+        this.Color = "#000000"
+      }
+      // if (this.selectId == 0) {
+      this.selectId = id
+      // } else {
+      //   this.selectId = 0
+      // }
+      this.labelList.filter((item) => {
+        if (item.id != id) {
+          item.checked = false
+          // 通过checked的值改变按钮颜色
+        }
+      })
+      this.labelList.filter((item) => {
+        if (item.id === id) {
+          item.checked = !item.checked
+          // 通过checked的值改变按钮颜色
+        }
+      })
+    },
+    changeAdd() {
+      this.isAdd = true
+      this.selectId = 0
+    },
+    comfire() {
+      this.selectId = 0
+      if (this.labelText == "") {
+        return
+      }
+      this.isExit = true
+      this.isChange = true
+      if (this.isChange) {
+        this.labelColor = "#3392FE"
+        this.labelColor2 = "#3392FE"
+        this.Color = "#fff"
+      } else {
+        this.labelColor = "#2D2D2D"
+      }
+
+    },
+    changeWrite() {
+      this.isChange = !this.isChange
+      if (this.isChange) {
+        this.labelColor = "#3392FE"
+        this.labelColor2 = "#3392FE"
+        this.Color = "#fff"
+        this.selectId = 0
+      } else {
+        this.labelColor = "#2D2D2D"
+        this.labelColor2 = "#F6F6F6"
+        this.Color = "#000000"
+      }
+    },
+    exit() {
+      this.selectId = 0
+      this.isExit = false
+      this.labelColor = "#DF5756"
+    },
+    getLocation() {
+      if (this.detailAddress || this.isCancel) {
+        return
+      }
+      this.showAddress = true
+    },
+    cancellation() {
+      this.showAddress = false
+      this.isCancel = true
+    },
+    filling() {
+      this.detailAddress = this.address
+      this.isCancel = true
+      this.showAddress = false
+    },
+    showdcaddress() {
+      showdcaddress({
+        id: this.addId
+      }).then(res => {
+        if (res.code == 200) {
+          let addressData = res.data.address
+          this.name = addressData.contact
+          this.sex1 = addressData.gender
+          this.tel = addressData.phone
+          this.door = addressData.number
+          this.$store.commit("changeAddress", addressData.addr)
+          this.$store.commit("changelng", addressData.lon)
+          this.$store.commit("changelat", addressData.lat)
+        }
+      })
+    },
+
+
+     //坐标转换
+    bd09ToGcj02(lng, lat) {
+      var x_pi = 3.14159265358979324 * 3000.0 / 180.0
+      var x = lng - 0.0065
+      var y = lat - 0.006
+      var z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi)
+      var theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi)
+      var gg_lng = z * Math.cos(theta)
+      var gg_lat = z * Math.sin(theta)
+      return [gg_lng, gg_lat]
+    },
+    /**
+     * 初始化地图
+     */
+    initMap() {
+      // 检查是否在微信环境
+      if (this.isWeiXin()) {
+        // 微信环境使用微信定位
+        this.initWechatLocation()
+      } else {
+        // 非微信环境直接加载地图
+        this.loadBaiduMap()
+      }
+    },
+
+    /**
+     * 加载百度地图
+     */
+    loadBaiduMap() {
+      // 检查是否已经加载
+      if (window.BMap) {
+        this.BMap = window.BMap
+        this.setupMap()
+        return
+      }
+
+      // 创建script标签加载百度地图API
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.src = `//api.map.baidu.com/api?v=2.0&ak=b3nPqKCpAtoSG03oDXu2FjuIUFvWOn9C&callback=baiduMapCallback`
+
+
+
+
+      // 定义回调函数
+      window.baiduMapCallback = () => {
+        this.BMap = window.BMap
+        this.setupMap()
+      }
+
+      script.onerror = (error) => {
+        console.error('百度地图API加载失败:', error)
+        Toast.fail('地图加载失败，请检查网络')
+        // 显示默认地址列表
+        this.showDefaultAddresses()
+      }
+
+      document.head.appendChild(script)
+    },
+
+    /**
+     * 设置地图
+     */
+    setupMap() {
+      try {
+        // 创建地图实例
+        this.map = new this.BMap.Map('container')
+
+        // 设置初始中心点
+        const point = new this.BMap.Point(this.currentPosition.lng, this.currentPosition.lat)
+        this.map.centerAndZoom(point, 15)
+
+        // 启用交互功能
+        this.map.enableScrollWheelZoom(true)
+        this.map.enableDoubleClickZoom(true)
+
+        // 初始化地理编码器
+        this.geocoder = new this.BMap.Geocoder()
+
+        // 添加中心点图标
+        this.addCenterIcon()
+
+        // 监听地图拖动结束事件
+        this.map.addEventListener("dragend", this.handleMapDragEnd.bind(this))
+
+        // 添加透明蓝色长方形覆盖物
+        // this.addRectangleOverlay()
+        // 尝试定位
+        this.tryLocation()
+ // 延迟渲染选择的地址（确保地图完全加载）
+    setTimeout(() => {
+      // 渲染从地址选择器返回的地址
+      this.renderSelectedAddress()
+      
+      // 如果没有选择器地址，渲染store中的地址
+      if (!sessionStorage.getItem('selectedAddress') && this.$store.state.address) {
+        this.renderAddressFromStore()
+      }
+    }, 1000)
+      } catch (error) {
+        console.error('地图设置失败:', error)
+        Toast.fail('地图初始化失败')
+        this.showDefaultAddresses()
+      }
+    },
+    /**
+ * 添加长方形透明覆盖物
+ */
+    addRectangleOverlay() {
+      if (!this.map || !this.BMap) return
+
+      try {
+        // 计算长方形区域（以中心点为中心，0.01经纬度范围）
+        const center = new this.BMap.Point(this.currentPosition.lng, this.currentPosition.lat)
+        const sw = new this.BMap.Point(
+          this.currentPosition.lng - 0.005, // 向西偏移
+          this.currentPosition.lat - 0.003  // 向南偏移
+        )
+        const ne = new this.BMap.Point(
+          this.currentPosition.lng + 0.005, // 向东偏移
+          this.currentPosition.lat + 0.003  // 向北偏移
+        )
+
+        // 创建长方形边界
+        const bounds = new this.BMap.Bounds(sw, ne)
+
+        // 创建多边形（长方形）覆盖物
+        const rectangle = new this.BMap.Polygon([
+          new this.BMap.Point(sw.lng, sw.lat), // 左下角
+          new this.BMap.Point(ne.lng, sw.lat), // 右下角
+          new this.BMap.Point(ne.lng, ne.lat), // 右上角
+          new this.BMap.Point(sw.lng, ne.lat)  // 左上角
+        ], {
+          strokeColor: "#1989fa",     // 边框颜色
+          strokeWeight: 2,            // 边框宽度
+          strokeOpacity: 0.8,         // 边框透明度
+          fillColor: "#1989fa",       // 填充颜色
+          fillOpacity: 0.2            // 填充透明度（20%透明）
+        })
+
+        // 添加到地图
+        this.map.addOverlay(rectangle)
+        this.rectangleOverlay = rectangle // 保存引用，便于后续更新
+
+      } catch (error) {
+        console.error('添加覆盖物失败:', error)
+      }
+    },
+    /**
+     * 尝试定位
+     */
+    async tryLocation() {
+      try {
+        // 先显示默认地址
+        this.showDefaultAddresses()
+
+        // 尝试获取当前位置
+        await this.getCurrentLocation()
+      } catch (error) {
+        console.warn('定位失败，使用默认位置:', error)
+        this.reverseGeocode(this.currentPosition.lng, this.currentPosition.lat)
+      }
+    },
+
+    /**
+     * 初始化微信定位
+     */
+    async initWechatLocation() {
+      try {
+        Toast.loading({
+          message: '定位中...',
+          forbidClick: true,
+          duration: 0
+        })
+
+        await this.getWechatLocation()
+
+        Toast.clear()
+        // 微信定位成功后加载地图
+        this.loadBaiduMap()
+
+      } catch (error) {
+        console.error('微信定位失败:', error)
+        Toast.clear()
+        // 微信定位失败也加载地图，使用默认位置
+        this.loadBaiduMap()
+      }
+    },
+
+    /**
+     * 获取当前位置
+     */
+    /**
+* 获取当前位置
+*/
+    async getCurrentLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { longitude, latitude } = position.coords
+              const [bdLng, bdLat] = this.wgs84ToBd09(longitude, latitude)
+              this.currentPosition = { lng: bdLng, lat: bdLat }
+
+              // 更新地图中心
+              if (this.map) {
+                const point = new this.BMap.Point(bdLng, bdLat)
+                this.map.centerAndZoom(point, 15)
+
+                // 更新长方形覆盖物位置
+                // this.updateRectanglePosition(bdLng, bdLat)
+              }
+
+              // 反向地理编码
+              this.reverseGeocode(bdLng, bdLat)
+              resolve()
+            },
+            (error) => {
+              console.warn('浏览器定位失败:', error)
+              // 定位失败，使用默认位置
+              this.reverseGeocode(this.currentPosition.lng, this.currentPosition.lat)
+              resolve()
+            },
+            {
+              enableHighAccuracy: false, // 降低精度要求，提高成功率
+              timeout: 5000,
+              maximumAge: 300000
+            }
+          )
+        } else {
+          reject(new Error('浏览器不支持定位'))
+        }
+      })
+    },
+
+    /**
+     * 微信定位
+     */
+    async getWechatLocation() {
+      return new Promise((resolve, reject) => {
+        const purl = window.location.href.split('#')[0]
+
+        getLocations({ url: purl }).then(res => {
+          if (res.code === 200) {
+            const config = {
+              debug: false,
+              appId: res.data.appid,
+              timestamp: res.data.time,
+              nonceStr: res.data.nonceStr,
+              signature: res.data.signature,
+              jsApiList: ['getLocation']
+            }
+
+            wx.config(config)
+
+            wx.ready(() => {
+              wx.getLocation({
+                type: 'gcj02',
+                success: (result) => {
+                  const [bdLng, bdLat] = this.gcj02ToBd09(result.longitude, result.latitude)
+                  this.currentPosition = { lng: bdLng, lat: bdLat }
+                  resolve()
+                },
+                fail: (err) => {
+                  console.error('微信定位失败:', err)
+                  reject(err)
+                }
+              })
+            })
+
+            wx.error((err) => {
+              reject(err)
+            })
+          } else {
+            reject(new Error('获取微信配置失败'))
+          }
+        }).catch(reject)
+      })
+    },
+
+    /**
+     * 添加中心点图标
+     */
+    addCenterIcon() {
+      const mapContainer = document.getElementById('container')
+      if (!mapContainer) return
+
+      const icon = document.createElement('img')
+      icon.src = require('@/assets/position1.png')
+      icon.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -100%);
+        z-index: 999;
+        cursor: pointer;
+        border-radius: 5px;
+        width: 30px;
+        height: 30px;
+      `
+      icon.id = "addrIcon"
+
+      icon.onclick = (e) => {
+        if (this.map) {
+          this.map.setZoom(this.map.getZoom() + 2)
+        }
+      }
+
+      mapContainer.appendChild(icon)
+    },
+
+    /**
+     * 反向地理编码
+     */
+    reverseGeocode(lng, lat) {
+      if (!this.geocoder) {
+        // 如果地理编码器未初始化，显示默认地址
+        this.showDefaultAddresses()
+        return
+      }
+
+      const point = new this.BMap.Point(lng, lat)
+
+      this.geocoder.getLocation(point, (rs) => {
+        if (!rs) {
+          this.showDefaultAddresses()
+          return
+        }
+
+        const addComp = rs.addressComponents
+
+        console.log('rs.addressComponents')
+        console.log(rs.addressComponents)
+
+        if (addComp.city) {
+          // 移除城市名中的"市"字，符合百度地图API要求
+          this.currentCity = addComp.city.replace('市', '')
+        } else if (addComp.province) {
+          // 如果城市为空，使用省份作为备选
+          this.currentCity = addComp.province.replace('省', '')
+        } else {
+          // 如果都没有，使用默认城市
+          this.currentCity = '北京'
+        }
+
+
+
+        // this.currentCity = addComp.city || '北京市'
+
+        // 处理周边POI
+        const surroundingArr = rs.surroundingPois || []
+        const addresses = surroundingArr.map(item => ({
+          id: `poi_${Date.now()}_${Math.random()}`,
+          title: item.title,
+          address: item.address,
+          province: addComp.province,
+          city: addComp.city,
+          district: addComp.district,
+          point: item.point
+        }))
+
+        // 添加当前位置
+        addresses.push({
+          id: 'current_location',
+          title: rs.address || '当前位置',
+          address: rs.address || '无法获取详细地址',
+          province: addComp.province,
+          city: addComp.city,
+          district: addComp.district,
+          point: rs.point
+        })
+
+        // 显示地址列表
+        this.nearbyAddresses = addresses
+        if (this.nearbyAddresses.length > 0) {
+          this.selectAddress(this.nearbyAddresses[0], 0)
+        }
+      })
+    },
+
+    /**
+     * 显示默认地址
+     */
+    showDefaultAddresses() {
+      this.nearbyAddresses = this.defaultAddresses
+      if (this.nearbyAddresses.length > 0) {
+        this.selectAddress(this.nearbyAddresses[0], 0)
+      }
+    },
+
+    /**
+     * 处理地图拖动结束
+     */
+
+    /**
+ * 处理地图拖动结束
+ */
+    handleMapDragEnd() {
+      if (!this.map || !this.geocoder) return
+
+      const center = this.map.getCenter()
+
+      // 显示动画效果
+      const icon = document.getElementById('addrIcon')
+      if (icon) {
+        icon.classList.add("icon")
+        setTimeout(() => {
+          icon.classList.remove("icon")
+        }, 1000)
+      }
+
+      // 更新长方形覆盖物位置
+      // this.updateRectanglePosition(center.lng, center.lat)
+
+      // 反向地理编码
+      this.reverseGeocode(center.lng, center.lat)
+    },
+
+    /**
+     * 更新长方形覆盖物位置
+     */
+    updateRectanglePosition(lng, lat) {
+      if (!this.map || !this.BMap) return
+
+      try {
+        // 如果已有覆盖物，先移除
+        if (this.rectangleOverlay) {
+          this.map.removeOverlay(this.rectangleOverlay)
+        }
+
+        // 重新计算长方形区域
+        const sw = new this.BMap.Point(
+          lng - 0.005, // 向西偏移
+          lat - 0.003  // 向南偏移
+        )
+        const ne = new this.BMap.Point(
+          lng + 0.005, // 向东偏移
+          lat + 0.003  // 向北偏移
+        )
+
+        // 创建新的长方形覆盖物
+        const rectangle = new this.BMap.Polygon([
+          new this.BMap.Point(sw.lng, sw.lat), // 左下角
+          new this.BMap.Point(ne.lng, sw.lat), // 右下角
+          new this.BMap.Point(ne.lng, ne.lat), // 右上角
+          new this.BMap.Point(sw.lng, ne.lat)  // 左上角
+        ], {
+          strokeColor: "#1989fa",     // 边框颜色
+          strokeWeight: 2,            // 边框宽度
+          strokeOpacity: 0.8,         // 边框透明度
+          fillColor: "#1989fa",       // 填充颜色
+          fillOpacity: 0.2            // 填充透明度（20%透明）
+        })
+
+        // 添加到地图
+        this.map.addOverlay(rectangle)
+        this.rectangleOverlay = rectangle // 更新引用
+
+      } catch (error) {
+        console.error('更新覆盖物失败:', error)
+      }
+    },
+    /**
+     * 选择地址
+     */
+    selectAddress(address, index) {
+      this.selectedAddressId = address.id
+      this.selectedAddress = address
+
+      if (address.point) {
+        this.selectedPosition = {
+          lng: address.point.lng,
+          lat: address.point.lat
+        }
+      }
+
+      // 更新UI
+      const addressItems = document.querySelectorAll('.address-item')
+      addressItems.forEach((item, i) => {
+        if (i === index) {
+          item.classList.add('selected')
+        } else {
+          item.classList.remove('selected')
+        }
+      })
+
+      // 移动地图到选中的位置
+      if (address.point && this.map) {
+        const point = new this.BMap.Point(address.point.lng, address.point.lat)
+        this.map.panTo(point)
+        // 更新长方形覆盖物位置
+        // this.updateRectanglePosition(address.point.lng, address.point.lat)
+      }
+    },
+
+    /**
+     * 处理搜索输入
+     */
+    handleSearchInput() {
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer)
+      }
+
+      if (!this.searchKeyword.trim()) {
+        this.searchResults = []
+        return
+      }
+
+      this.searchTimer = setTimeout(() => {
+        if (this.searchKeyword.length >= 2) {
+          this.performSearch()
+        }
+      }, 500)
+    },
+
+    
+    performSearch() {
+      if (!this.BMap || !this.searchKeyword.trim() || !this.map) {
+        console.warn('搜索条件不满足:', { BMap: !!this.BMap, keyword: this.searchKeyword, map: !!this.map })
+        return
+      }
+
+      try {
+        // 创建本地搜索实例 - 使用新版API
+        const local = new this.BMap.LocalSearch(this.currentCity, {
+          renderOptions: {
+            // map: this.map,
+            // autoViewport: true
+            map: null, // 这里设置为null，不在搜索结果上显示标注
+            autoViewport: true,
+            selectFirstResult: false, // 不选中第一个结果
+            panel: null // 不使用结果面板
+          },
+          pageCapacity: 20,
+          onSearchComplete: (results) => {
+            this.processSearchResults(results)
+          }, onInfoHtmlSet: () => {
+            // 这个方法什么都不做，阻止默认的信息窗口
+            return false;
+          }
+        })
+
+        // 检查search方法是否存在
+        if (typeof local.search === 'function') {
+          local.search(this.searchKeyword)
+        } else if (typeof local.searchInCity === 'function') {
+          local.searchInCity(this.searchKeyword, this.currentCity)
+        } else {
+          console.error('LocalSearch 对象没有 search 或 searchInCity 方法')
+          Toast('搜索功能暂时不可用')
+        }
+
+      } catch (error) {
+        console.error('搜索出错:', error)
+        Toast('搜索失败，请重试')
+      }
+    },
+    /**
+     * 处理搜索结果
+     */
+    processSearchResults(results) {
+      const searchResults = []
+
+      if (results) {
+        // 尝试获取POI数量
+        const poiCount = results.getCurrentNumPois ? results.getCurrentNumPois() : 0
+
+        for (let i = 0; i < poiCount; i++) {
+          try {
+            const poi = results.getPoi(i)
+            if (poi && poi.point) {
+              searchResults.push({
+                id: poi.uid || `search_${Date.now()}_${i}`,
+                title: poi.title || '',
+                address: poi.address || '',
+                province: poi.province || '',
+                city: poi.city || '',
+                district: poi.district || '',
+                point: poi.point
+              })
+            }
+          } catch (error) {
+            console.error('处理POI失败:', error)
+          }
+        }
+      }
+
+      this.searchResults = searchResults
+    },
+
+    /**
+     * 选择搜索结果
+     */
+    /**
+* 选择搜索结果
+*/
+    selectSearchResult(result) {
+      this.selectedAddressId = result.id
+      this.selectedAddress = result
+
+      if (result.point) {
+        this.selectedPosition = {
+          lng: result.point.lng,
+          lat: result.point.lat
+        }
+      }
+
+      // 移动地图
+      if (this.map && result.point) {
+        const point = new this.BMap.Point(result.point.lng, result.point.lat)
+        this.map.centerAndZoom(point, 15)
+
+        // 更新长方形覆盖物位置
+        // this.updateRectanglePosition(result.point.lng, result.point.lat)
+      }
+
+      // 退出搜索模式
+      this.cancelSearch()
+
+      // 将搜索结果添加到地址列表
+      this.nearbyAddresses = [result, ...this.nearbyAddresses]
+      this.selectAddress(result, 0)
+    },
+
+    /**
+     * 搜索框获得焦点
+     */
+    onSearchFocus() {
+      this.isSearching = true
+    },
+
+    /**
+     * 取消搜索
+     */
+    cancelSearch() {
+      this.isSearching = false
+      this.searchKeyword = ''
+      this.searchResults = []
+    },
+
+    /**
+     * 清空搜索
+     */
+    clearSearch() {
+      this.searchKeyword = ''
+      this.searchResults = []
+    },
+
+    /**
+     * 确认选择
+     */
+    confirmSelection() {
+      if (!this.selectedAddress) {
+        Toast('请先选择位置')
+        return
+      }
+      console.log(this.selectedAddress)
+
+      const bdLng = this.selectedAddress.point?.lng || this.selectedPosition.lng
+      const bdLat = this.selectedAddress.point?.lat || this.selectedPosition.lat
+      const [gcjLng, gcjLat] = this.bd09ToGcj02(bdLng, bdLat)
+
+      // 构建完整的地址字符串（这是关键）
+      const fullAddress = [
+        this.selectedAddress.province,
+        this.selectedAddress.city,
+        this.selectedAddress.district,
+        this.selectedAddress.title,
+        this.selectedAddress.address
+      ].filter(item => item && item.trim()).join('')
+
+
+
+
+
+      // 保存地址信息到sessionStorage
+      const addressInfo = {
+        name: this.selectedAddress.title,
+        address: this.selectedAddress.address,
+        province: this.selectedAddress.province,
+        city: this.selectedAddress.city,
+        district: this.selectedAddress.district,
+        // 关键：保存完整地址字符串
+        fullAddress: fullAddress,
+        // lng: this.selectedAddress.point?.lng || this.selectedPosition.lng,
+        //   lat: this.selectedAddress.point?.lat || this.selectedPosition.lat,
+        lng: gcjLng,  // ← 这里使用转换后的坐标
+        lat: gcjLat   // ← 这里使用转换后的坐标
+      }
+
+      sessionStorage.setItem('selectedAddress', JSON.stringify(addressInfo))
+
+      Toast.success('位置已选择')
+
+      // 返回上一页
+      setTimeout(() => {
+        this.$router.back()
+      }, 800)
+    },
+    /**
+     * 返回
+     */
+    goBack() {
+      this.$router.back()
+    },
+
+    /**
+     * 检查是否在微信中
+     */
+    isWeiXin() {
+      const ua = navigator.userAgent.toLowerCase()
+      return ua.includes('micromessenger')
+    },
+
+    /**
+     * 坐标转换方法
+     */
+    wgs84ToBd09(lng, lat) {
+      const x_pi = (3.14159265358979324 * 3000.0) / 180.0
+      const x = lng
+      const y = lat
+      const z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * x_pi)
+      const theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * x_pi)
+      const bd_lng = z * Math.cos(theta) + 0.0065
+      const bd_lat = z * Math.sin(theta) + 0.006
+      return [bd_lng, bd_lat]
+    },
+
+    gcj02ToBd09(lng, lat) {
+      const x_pi = (3.14159265358979324 * 3000.0) / 180.0
+      const x = lng
+      const y = lat
+      const z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * x_pi)
+      const theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * x_pi)
+      const bd_lng = z * Math.cos(theta) + 0.0065
+      const bd_lat = z * Math.sin(theta) + 0.006
+      return [bd_lng, bd_lat]
+    },
+    /**
+ * 在地图上添加地址标记
+ */
+addAddressMarker(lng, lat, title = '选择的位置') {
+  if (!this.map || !this.BMap) return
+  
+  // 先清除之前的标记
+  this.clearAddressMarkers()
+  
+  // 创建标记点
+  const point = new this.BMap.Point(lng, lat)
+  const marker = new this.BMap.Marker(point, {
+    icon: new this.BMap.Icon(require('@/assets/position1.png'), new this.BMap.Size(30, 30))
+  })
+  
+  // // 添加信息窗口
+  // const infoWindow = new this.BMap.InfoWindow(title, {
+  //   width: 250,
+  //   height: 60,
+     
+  //   title: '已选择地址'
+  // })
+  
+  // // 添加点击事件
+  // marker.addEventListener('click', () => {
+  //   this.map.openInfoWindow(infoWindow, point)
+  // })
+  
+  // 添加到地图
+  // this.map.addOverlay(marker)
+  
+  // 保存标记引用，便于后续清除
+  // this.addressMarker = marker
+  
+  // 将地图中心移动到标记位置
+  this.map.centerAndZoom(point, 17)
+  
+  // 更新长方形覆盖物位置
+  // this.updateRectanglePosition(lng, lat)
+  
+  // 显示信息窗口
+  // setTimeout(() => {
+  //   this.map.openInfoWindow(infoWindow, point)
+  // }, 500)
+},
+
+/**
+ * 清除地址标记
+ */
+clearAddressMarkers() {
+  if (this.addressMarker && this.map) {
+    this.map.removeOverlay(this.addressMarker)
+    this.addressMarker = null
+  }
+},
+
+/**
+ * 渲染选择的地址到地图
+ */
+renderSelectedAddress() {
+  const selectedAddress = sessionStorage.getItem('selectedAddress')
+  
+  if (selectedAddress) {
+    try {
+      const addressInfo = JSON.parse(selectedAddress)
+      console.log('渲染地址:', addressInfo)
+      
+      // 转换坐标到百度坐标系
+      const [bdLng, bdLat] = this.gcj02ToBd09(addressInfo.lng, addressInfo.lat)
+      
+      // 在地图上添加标记
+      this.addAddressMarker(bdLng, bdLat, addressInfo.fullAddress || addressInfo.name)
+      
+      // 创建模拟的地址对象，更新地址列表
+      const addressObj = {
+        id: 'selected_address',
+        title: addressInfo.name || '已选地址',
+        address: addressInfo.address || '',
+        province: addressInfo.province,
+        city: addressInfo.city,
+        district: addressInfo.district,
+        point: { lng: bdLng, lat: bdLat }
+      }
+      
+      // 更新地址列表
+      this.nearbyAddresses = [addressObj]
+      this.selectedAddress = addressObj
+      this.selectedAddressId = addressObj.id
+      
+    } catch (error) {
+      console.error('渲染地址失败:', error)
+    }
+  }
+},/**
+ * 从store中渲染地址到地图
+ */
+renderAddressFromStore() {
+  if (this.$store.state.address && this.$store.state.lng && this.$store.state.lat) {
+    const addressInfo = {
+      name: this.$store.state.address.split(' ')[0] || '已选地址',
+      address: this.$store.state.address,
+      lng: this.$store.state.lng,
+      lat: this.$store.state.lat
+    }
+    
+    // 转换坐标到百度坐标系
+    const [bdLng, bdLat] = this.gcj02ToBd09(addressInfo.lng, addressInfo.lat)
+    
+    // 在地图上添加标记
+    this.addAddressMarker(bdLng, bdLat, addressInfo.address)
+  }
+}
+  },
+  // created() {
+  //   this.addId = this.$route.query.id || ""
+  //   this.num1 = this.$route.query.num1 || ""
+  //   this.uid = localStorage.getItem("uid");
+  //   if (sessionStorage.getItem("addressData")) {
+  //     let addressData = JSON.parse(sessionStorage.getItem("addressData"))
+  //     this.name = addressData.name
+  //     this.sex1 = addressData.sex1
+  //     this.tel = addressData.tel
+  //     this.door = addressData.door
+  //   }else {
+  //     if(this.addId){
+  //       let addr = this.$route.query.addr
+  //       if(addr){
+  //         let addressData = JSON.parse(this.$route.query.addr)
+  //         this.name = addressData.contact
+  //         this.sex1 = addressData.gender-1
+  //         this.tel = addressData.phone
+  //         this.door = addressData.number
+  //         this.$store.commit("changeAddress", addressData.addr)
+  //         this.$store.commit("changelng", addressData.lon)
+  //         this.$store.commit("changelat", addressData.lat)
+  //       }
+  //       // else {
+  //       //   this.showdcaddress()
+  //       // }
+  //     }
+  //   }
+  // },
+  created() {
+    this.addId = this.$route.query.id || ""
+    this.num1 = this.$route.query.num1 || ""
+    this.uid = localStorage.getItem("uid");
+
+    // 关键修改：检查是否有从地址选择器返回的地址
+    const selectedAddress = sessionStorage.getItem('selectedAddress')
+    console.log(selectedAddress)
+    if (selectedAddress) {
+      try {
+        const addressInfo = JSON.parse(selectedAddress)
+
+        // 如果有fullAddress，优先使用它
+        if (addressInfo.fullAddress) {
+          this.$store.commit('changeAddress', addressInfo.fullAddress)
+        } else if (addressInfo.address) {
+          // 如果没有fullAddress，自己拼接
+          const fullAddress = [
+            addressInfo.province,
+            addressInfo.city,
+            addressInfo.district,
+            addressInfo.name,
+            addressInfo.address
+          ].filter(item => item && item.trim()).join('')
+          this.$store.commit('changeAddress', fullAddress)
+        }
+
+        this.$store.commit('changelng', addressInfo.lng)
+        this.$store.commit('changelat', addressInfo.lat)
+const [bdLng, bdLat] = this.gcj02ToBd09(addressInfo.lng, addressInfo.lat)
+      this.currentPosition = { lng: bdLng, lat: bdLat }
+        // 清理sessionStorage
+        sessionStorage.removeItem('selectedAddress')
+      } catch (error) {
+        console.error('解析地址信息失败:', error)
+      }
+    }
+
+    // 原有的表单数据恢复逻辑保持不变
+    if (sessionStorage.getItem("addressData")) {
+      let addressData = JSON.parse(sessionStorage.getItem("addressData"))
+      this.name = addressData.name
+      this.sex1 = addressData.sex1
+      this.tel = addressData.tel
+      this.door = addressData.door
+    } else if (this.addId) {
+      // 编辑模式逻辑保持不变
+      let addr = this.$route.query.addr
+      if (addr) {
+        let addressData = JSON.parse(this.$route.query.addr)
+        this.name = addressData.contact
+        this.sex1 = addressData.gender - 1
+        this.tel = addressData.phone
+        this.door = addressData.number
+        this.$store.commit("changeAddress", addressData.addr)
+        this.$store.commit("changelng", addressData.lon)
+        this.$store.commit("changelat", addressData.lat)
+      }
+    }
+  },
+  mounted() {
+     this.initMap()
+      
+  // 监听地址变化
+  this.$store.watch(
+    state => state.address,
+    (newAddress) => {
+      if (newAddress) {
+        // 如果地址是通过store更新的，重新渲染地图
+        setTimeout(() => {
+          this.renderAddressFromStore()
+        }, 1000)
+      }
+    }
+  )
+  }
+}
+</script>
+
+<style scoped lang="less">
+.conPage {
+  min-height: 100vh;
+  background-color: #F0F0F0;
+  box-sizing: border-box;
+}
+
+.sex .inpBox {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sex button {
+  margin-left: 10px;
+  width: 50px;
+  background: transparent;
+  border-radius: 50px;
+  border: 1px solid gray;
+  font-size: 13px;
+  padding: 3px 2px;
+  color: gray;
+}
+
+.sex .sexoption2 {
+  border: 1px solid #DF5756;
+  background-color: #DF5756;
+  color: #ffffff;
+}
+
+.addressBox {
+  background-color: white;
+  padding: 10px;
+
+  .consignee {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 13px 5px;
+    border-bottom: 1px solid #dedede;
+
+    .consigneeText {
+      // font-weight: bold;
+      width: 60px;
+      white-space: nowrap;
+    }
+  }
+
+  .consignee2 {
+    padding: 16px 5px;
+    
+  }
+.dtbg{background: url(../../assets/dc5.png);background-size: 100% 100%; border-radius: 6px;
+border: 1px solid #f8f7f7;
+}
+  .inpBox {
+    // width: 75%;
+    flex: 1;
+    font-size: 15px;
+    // font-weight: 600;
+
+    .inp {
+      width: 100%;
+      height: 100%;
+      border: none;
+      // font-weight: 600;
+    }
+
+    .textarea {
+      height: 50px;
+      // font-weight: 600;
+    }
+  }
+
+ 
+
+  .labelBox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 75%;
+    flex-wrap: wrap;
+
+    .label {
+      background-color: #F7F7F7;
+      font-size: 14px;
+      text-align: center;
+      width: 53px;
+      height: 23px;
+      line-height: 23px;
+      border-radius: 2px;
+    }
+
+    .label1 {
+      background-color: #3392FE;
+      color: white;
+    }
+
+    .determine {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background-color: #fff0;
+      border-radius: 30px;
+      overflow: hidden;
+      height: 30px;
+      line-height: 30px;
+
+      .comfireBox {
+        width: 90%;
+        background-color: #F6F6F6;
+        height: 30px;
+        padding: 0px 8px;
+        font-size: 13px;
+
+        .comfireInp {
+          width: 100%;
+          height: 100%;
+          border: none;
+          background-color: #fff0;
+        }
+      }
+
+      .comfire {
+        width: 20%;
+        background-color: #EAEAEA;
+        height: 100%;
+        color: white;
+        padding: 3px;
+      }
+    }
+  }
+}
+
+.info {
+  color: #A5A5A5;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.addNewAddress {
+  background-color: white;
+  position: fixed;
+  width: 100%;
+  left: 0px;
+  bottom: 0;
+  box-sizing: border-box;
+  padding: 13px 15px;
+
+  .btn {
+    background-image: linear-gradient(to right, #F28F8E, #DC4F4E);
+    color: white;
+    border-radius: 30px;
+    text-align: center;
+    height: 39px;
+    line-height: 39px;
+    font-size: 17px;
+  }
+}
+
+/deep/ .van-switch {
+  width: 50px;
+}
+
+/deep/ .van-switch--on .van-switch__node {
+  transform: translateX(20px);
+}
+
+.popupBox2 {
+  /deep/ .van-overlay {
+    display: none;
+  }
+
+  /deep/ .van-popup--top {
+    top: 166px;
+    left: 76%;
+    background-color: #fff0;
+    transition: none;
+    position: absolute;
+  }
+
+  .popup {
+    padding: 30px 25px;
+    background-image: url("../../assets/mine/xb.png");
+    width: 272px;
+    height: 134px;
+    box-sizing: border-box;
+    background-size: 100% 100%;
+  }
+
+  .brandBox {
+    font-size: 14px;
+    color: #6c6b6b;
+    line-height: 25px;
+  }
+
+  .retract {
+    border: 1px solid #DF5756;
+    color: #DF5756;
+    width: 57px;
+    font-size: 13px;
+    text-align: center;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 5px;
+  }
+
+  .retractBox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+    justify-content: flex-end;
+  }
+
+  .retract2 {
+    background-color: #DF5756;
+    color: #fff;
+  }
+}
+
+
+
+
+.jd-style-address-picker {
+  position: fixed;
+  /* 关键：脱离文档流，防止与父页面互相影响 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  /* 添加以下两行，增强隔离和性能 */
+  // overflow: hidden; /* 禁止此容器自身产生任何滚动 */
+  z-index: 0;
+  /* 确保在最顶层 */
+
+  .search-header {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      gap: 10px;
+
+      .back-icon {
+        font-size: 20px;
+        color: #333;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .search-input-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: #f5f5f5;
+        border-radius: 20px;
+        padding: 8px 15px;
+
+
+        .search-icon {
+          color: #999;
+          margin-right: 8px;
+          flex-shrink: 0;
+        }
+
+        .search-input {
+          flex: 1;
+          border: none;
+          background: transparent;
+          font-size: 14px;
+          color: #333;
+          outline: none;
+
+          &::placeholder {
+            color: #999;
+          }
+        }
+
+        .clear-icon {
+          color: #ccc;
+          margin-left: 8px;
+          flex-shrink: 0;
+          cursor: pointer;
+        }
+      }
+
+      .cancel-btn {
+        color: #1989fa;
+        font-size: 14px;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .map-container {
+    width: 100%;
+    height: 52%;
+    /* 保持原有比例 */
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    /* 关键：明确地图的触摸行为，只允许平移和缩放 */
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .address-list-container {
+    flex: 1;
+    display: flex;
+    /* 新增 */
+    flex-direction: column;
+    /* 新增 */
+    min-height: 0;
+    overflow: hidden;
+    background: #f9fafa;
+    border-radius: 30px 30px 0 0;
+    margin-top: -120px;
+    position: relative;
+    z-index: 999;
+
+    &.full-screen {
+      margin-top: -150px;
+      border-radius: 0;
+    }
+
+    .nearby-addresses {
+      position: absolute;
+      /* 新增 */
+      top: 0;
+      /* 新增 */
+      left: 0;
+      /* 新增 */
+      right: 0;
+      /* 新增 */
+      bottom: 0;
+      /* 新增 */
+      overflow: hidden;
+      /* 保留但位置变化 */
+      display: flex;
+      /* 新增 */
+      flex-direction: column;
+
+      .address-list {
+        // height: 100%;
+        overflow-y: auto;
+        padding-bottom: 60px;
+        border-radius: 20px;
+        flex: 1;
+        /* 新增 - 关键！ */
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+
+        /* 新增 - 移动端优化 */
+        .address-item {
+          display: flex;
+          align-items: center;
+          padding: 15px;
+          margin: 0 10px;
+          border-bottom: #e2e2e2 solid 1px;
+          background: #FFF;
+          cursor: pointer;
+
+          &:first-child {
+            margin-top: 20px;
+          }
+
+          &:active {
+            background: #f9f9f9;
+          }
+
+          &.selected {
+            background: #f0f8ff;
+          }
+
+          .address-content {
+            flex: 1;
+            width: 88%;
+
+            .address-name {
+              font-size: 16px;
+              color: #333;
+              font-weight: 500;
+              margin-bottom: 4px;
+            }
+
+            .address-detail {
+              font-size: 12px;
+              color: #666;
+              font-weight: 200;
+            }
+          }
+        }
+      }
+    }
+
+    .search-results {
+      height: 100%;
+      background: white;
+      overflow-y: auto;
+      padding: 20px 0;
+
+      .result-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+
+        &:active {
+          background: #f9f9f9;
+        }
+
+        .result-icon {
+          color: #1989fa;
+          margin-right: 12px;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+
+        .result-content {
+          flex: 1;
+
+          .result-title {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 4px;
+          }
+
+          .result-address {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 2px;
+          }
+
+          .result-area {
+            font-size: 12px;
+            color: #999;
+          }
+        }
+      }
+
+      .no-results {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        color: #999;
+
+        .no-result-text {
+          margin-top: 15px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  .confirm-footer {
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    background: #f9fafa;
+    padding: 10px;
+    z-index: 1000;
+
+    .confirm-btn {
+      width: 75%;
+      background: #df5655;
+      color: #fff;
+      border: none;
+      height: 44px;
+      font-size: 16px;
+
+      &:disabled {
+        opacity: 0.6;
+      }
+    }
+  }
+}
+/* 添加遮罩层样式 */
+.map-container {
+  width: 100%;
+  height: 52%;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* 透明遮罩层，覆盖在地图上方 */
+.map-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999; /* 确保在最上层 */
+  cursor: pointer;
+  /* background-color: rgba(255,0,0,0.1); */ /* 调试时可以加上颜色查看覆盖区域 */
+}
+
+.jd-style-address-picker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  z-index: 0;
+  
+  /* 防止地图被点击 */
+  .map-container {
+    pointer-events: none; /* 禁用所有地图交互 */
+  }
+}
+
+</style>

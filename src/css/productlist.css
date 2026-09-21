@@ -1,0 +1,370 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+.selectproduct{
+    width: 100%;
+    position: absolute;
+}
+.selectproduct .header{
+    display: flex;justify-content: space-between;align-items: center;
+}
+.selectproduct .header .headerleft{
+    margin-left: 10px;flex: 1.2;
+}
+.selectproduct .header .headerleft .store{
+    display: flex;align-items: center;margin-bottom: 5px;
+}
+.storeadd{
+    margin-left: 5px;font-size: 15px;font-weight: 800;
+}
+.option{
+    font-size: 13px;color: gray;width: 100%;
+}
+.headerright{
+    margin-right: 18px;display: flex;flex-direction: column;align-items: center;flex: 0.3;
+}
+.headerright p{
+    height: 5px;margin-top: 5px;font-size: 13px;color: #000;
+}
+
+
+/* 下方选择 */
+.listbox{
+    display: flex;
+}
+.listbox .leftlist{
+    flex: 1;
+    /* background: red; */
+    overflow-y: auto;
+}  
+.listbox .leftlist li{
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    justify-content: center;
+    align-items: center;
+    color: gray;
+    background: #f0f0f0;
+    text-align: center;
+    /* border-radius: 10px; */
+}
+/* .listbox .leftlist li:hover{
+    background: red;
+} */
+
+.listbox .leftlist img{
+    width: 40px;
+} 
+.listbox .rightlist{
+    flex: 4;
+}
+.listbox .right{
+    display: flex;flex-direction: column;justify-content: center;
+}
+.listbox .rightlist ul li{
+    padding-top: 10px;
+    /* display: none; */
+    width: 94%;
+    /* border-bottom: 1px solid #f0f0f0; */
+    padding-bottom: 10px;
+    margin-left: 3%;
+    margin-right: 3%;
+}
+.listbox .rightlist ul li:nth-of-type(1){
+    padding-top: 0;
+}
+.listbox .rightlist .title{
+    border-left: 3px solid #0e6941;
+    padding-left: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+    font-size: 15px;
+    font-weight: 800;
+}
+.listbox .rightlist .wrap{
+    display: flex;
+    /* margin-left: 5%; */
+    padding-left: 5%;
+    border-bottom: 1px solid #f2f2f2 ;
+    margin-top: 10px;
+    padding-bottom: 10px;
+}
+.listbox .rightlist .wrap .left img{
+    border-radius: 50px;
+    width: 110px;
+}
+.listbox .rightlist .wrap .p1{
+    margin-top: 5%;
+    font-size: 15px;
+    font-weight: 800;
+}
+.listbox .rightlist .wrap .p2{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 17%;
+    padding-right: 10%;
+}
+.listbox .rightlist .wrap span{
+    font-weight: 600;font-size: 16px;
+}
+.listbox .rightlist .wrap button{
+   
+    border: none;
+    padding: 7px 15px;
+    border-radius: 50px;
+    font-size: 13px;
+}
+/* 购物车没商品 */
+.shopcar{
+    position: fixed;
+    z-index: 100;
+    width: 84%;
+    height: 48px;
+    bottom: 20px;
+    left: 8%;
+    border-radius: 50px;
+    background: #3a3a3a !important;
+}
+.shopcar img{
+    float: left;
+    width: 34px;
+    padding-left: 20px;
+    padding-top: 10px;
+}
+.shopcar span{
+    color: #9a9a9a;
+    font-weight: 600;
+    float: left;
+    margin-left: 13px;
+    margin-top: 15px;
+    font-size: 16px;
+    
+}
+.shopcar .btn1{
+    float: right;
+    display: flex;
+    flex-direction: column;
+    width: 38%;
+    text-align: center;
+    /* height: 88%; */
+    border-radius: 50px;
+    background: #6b6b6b;
+    height: 18px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    align-items: center;
+    justify-content: center;
+
+}
+.shopcar .btn1 i{
+    font-style: normal;
+    color: #949494;
+}
+
+/* 购物车有商品 */
+.shopcar1{
+    position: fixed;
+    z-index: 100;
+    width: 84%;
+    height: 48px;
+    bottom: 20px;
+    left: 8%;
+    border-radius: 50px;
+    
+}
+.shopcar1 img{
+    float: left;
+    width: 34px;
+    padding-left: 20px;
+    padding-top: 10px;
+}
+.shopcar1 span{
+    color: #fff;
+    font-weight: 600;
+    float: left;
+    margin-left: 13px;
+    margin-top: 10px;
+    font-size: 21px;
+}
+.shopcar1 .btn1{
+    
+    float: right;
+    display: flex;
+    flex-direction: column;
+    width: 38%;
+    text-align: center;
+    /* height: 88%; */
+    border-radius: 50px;
+    background: #ffd861;
+    height: 18px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    align-items: center;
+    justify-content: center;
+}
+.shopcar1 .btn1 i{
+    font-style: normal;
+    color: #000;
+}
+.circle{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #ffd861;
+    border-radius: 50px;
+    font-size: 14px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #000 !important;
+    border: none;
+    top: -15px;
+    left: 45px;
+}
+>>> .van-popup--bottom{
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+.title{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+.title .s1{
+    font-size: 18px;
+    font-weight: 800;
+}
+.title .s2{
+    font-size: 14px;
+    color: gray;
+}
+.title  p img{
+    width: 24px;
+}
+.title  p{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* 购物车内容 */
+.shopcarproduct{
+    padding-bottom: 80px;
+}
+.shopcarproduct li {
+    display: flex;
+    justify-content: space-around;
+    border-bottom: 1px solid #f0f0f0;
+    margin: 0 10px;
+    padding: 10px 0px;
+}
+.shopcarproduct li img{
+    width: 30%;
+    height: 100%;
+    flex: 1;
+}
+.shopcarproduct li img{
+    flex-wrap: nowrap;
+}
+.shopcarproduct li .shop{
+    padding-left: 10px;
+    flex: 1.7;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.shopcarproduct li .shop div{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 7px;
+    /* margin-right: -10px; */
+}
+.shopcarproduct li .shop div .price{
+    font-weight: 600;
+    font-size: 17px;
+}
+.shopcarproduct li .shop .name{
+    font-size: 17px;
+    font-weight: 600;
+}
+.shopcarproduct li .shop .specification{
+    font-size: 14px;
+    padding: 3px 6px;
+    background: #f2f2f2;
+    color: gray;
+    width: 95%;
+    margin-top: 3px;
+}
+/* specification */
+/* 步进器 */
+>>> .van-stepper__minus{
+    border-radius: 50px;
+    background: transparent;
+    border: 1px solid gray;
+}
+>>> .van-stepper__input{
+    background: transparent !important;
+    color: #000 !important;
+    font-size: 17px !important;
+}
+>>> .van-stepper__plus{
+    background: #febb0c !important;
+    border-radius: 50px;
+    background: transparent;
+}
+
+
+/* 麦当劳 */
+  .rightlistbtn1{
+    background: #e6a54e;
+  }
+  .rightlistprice1{
+    color:#bc6e42;
+  }
+  #shopcarbck1{
+    background: #d42b1d;
+  }
+    /* 肯德基 */
+    .rightlistbtn2{
+        background: #e6a54e;
+      }
+      .rightlistprice2{
+        color:#bc6e42;
+      }
+      #shopcarbck2{
+        background: #d42b1d;
+      }
+  /* 必胜客 */
+  .rightlistbtn3{
+    background: #e6a54e;
+  }
+  .rightlistprice3{
+    color:#bc6e42;
+  }
+  #shopcarbck3{
+    background: #d42b1d;
+  }
+/* 星巴克 */
+.rightlistbtn4{
+    background: #cfe7dc;
+  }
+  .rightlistprice4{
+    color:#0e6941;
+  }
+  #shopcarbck4{
+    background: #0e6941;
+  }
+  /* 奈雪的茶 */
+.rightlistbtn5{
+    background: #cfe7dc;
+  }
+  .rightlistprice5{
+    color:#0e6941;
+  }
+  #shopcarbck5{
+    background: #0e6941;
+  }

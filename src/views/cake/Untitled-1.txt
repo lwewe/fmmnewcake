@@ -1,0 +1,34 @@
+    <NProgress v-if="loadingflag"/>
+    <div class="banner">
+      <img class="img" :src="banner" alt="">
+    </div>
+    <div class="lineBox">
+      <div class="line"></div>
+      <div class="lineTitle">优选品牌</div>
+      <div class="line"></div>
+    </div>
+    <div class="centerBox">
+      <!--      品牌-->
+      <!--    轮播图分类 -->
+      <div class="filmBox">
+        <!--      分类-->
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide" v-for="item in sortList" :key="item.id" @click="amplify(item.id)">
+              <div class="bannerImg">
+                <img class="img" style="object-fit: cover" :src="item.image_path" alt="">
+              </div>
+<!--              <div>{{item.name}}</div>-->
+              <!--            详情-->
+              <div class="detail" v-if="selectId==item.id"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!--    列表-->
+    <div class="listBox">
+      <ShopList :productList="productList"></ShopList>
+      <loading style="margin-top: 2px" v-if="isLoading"></loading>
+    </div>
