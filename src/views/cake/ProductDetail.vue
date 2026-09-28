@@ -1,15 +1,13 @@
 <template>
   <div class="location">
-    <NProgress v-if="loadingflag"/>
+    <NProgress v-if="loadingflag" />
     <ReturnBack :rcolor="'#fff'" :bcolor="'#CCCCCC'"></ReturnBack>
     <div v-if="detail.id">
-      <!--  轮播图-->
+      <!--  轮播图 -->
       <div class="banner">
         <van-swipe :autoplay="3000" indicator-color="white" @change="onChange">
           <van-swipe-item class="bannerImg" v-for="item in bannerList" :key="item.id">
-            <img class="img" style="object-fit: cover"
-                 :src=" item.l_path"
-                 alt="">
+            <img class="img" style="object-fit: cover" :src="item.l_path" alt="">
           </van-swipe-item>
         </van-swipe>
         <div class="bannerNum">{{ onIndex }}/{{ bannerList.length }}</div>
@@ -26,8 +24,8 @@
         <!--      选择-->
         <div class="selectBox">
           <!--          规格-->
-          <div class="specifications" :style="{border:item.id ==3?'none':''}" v-for="item in selectList" :key="item.id"
-               @click="open(item.status,item.id)">
+          <div class="specifications" :style="{ border: item.id == 3 ? 'none' : '' }" v-for="item in selectList" :key="item.id"
+            @click="open(item.status, item.id)">
             <div class="leftBox">
               <div class="specificationsImg">
                 <img class="img" :src="item.icon" alt="">
@@ -37,14 +35,14 @@
                 <!--                <div class="tip" v-if="item.id ==2">明日18:00前下单,预计04月07日(周日)18:00前发货</div>-->
               </div>
             </div>
-            <div class="iconBox" v-if="item.id !=3">
-              <van-icon name="arrow"/>
+            <div class="iconBox" v-if="item.id != 3">
+              <van-icon name="arrow" />
             </div>
           </div>
         </div>
       </div>
       <!--    商品推荐-->
-      <div class="shopDetail" style="padding: 0;" v-if="productCake.length>0">
+      <div class="shopDetail" style="padding: 0;" v-if="productCake.length > 0">
         <div class="shopDetailTextBox">
           <div class="line"></div>
           <div class="shopDetailText">商品推荐</div>
@@ -53,8 +51,8 @@
         <!--      列表-->
         <div class="listShop">
           <van-swipe indicator-color="#ED3036" @change="onChangeShop">
-            <van-swipe-item v-for="(item,index) in Math.ceil(productCake.length/6)" :key="item.id">
-              <ShopList :cake="1" :productList="productCake.slice(index*6,(index+1)*6)"></ShopList>
+            <van-swipe-item v-for="(item, index) in Math.ceil(productCake.length / 6)" :key="item.id">
+              <ShopList :cake="1" :productList="productCake.slice(index * 6, (index + 1) * 6)"></ShopList>
             </van-swipe-item>
           </van-swipe>
         </div>
@@ -66,7 +64,7 @@
           <div class="shopDetailText">商品详情</div>
           <div class="line"></div>
         </div>
-        <div  v-if="detail.content&&detail.flag==0">
+        <div v-if="detail.content && detail.flag == 0">
           <div class="wcontent" v-if="detail.extra_data">
             <div class="distrubtion">
               {{ JSON.parse(detail.extra_data).distrubtion }}
@@ -76,49 +74,32 @@
             </div>
           </div>
         </div>
-        <div v-if="detail.flag==1" class="contentFlag">
+        <div v-if="detail.flag == 1" class="contentFlag">
           <div v-html="detail.content"></div>
         </div>
       </div>
       <!--    底部button-->
       <div>
         <van-goods-action>
-          <van-goods-action-mini-btn
-              @click="toCart"
-              :icon="require('../../assets/tubiao/gc.png')"
-              text="购物车"
-          />
-          <van-goods-action-mini-btn
-              @click="toKefu"
-              :icon="require('../../assets/tubiao/kfz.png')"
-              text="客服"
-          />
-          <van-goods-action-big-btn class="goCart"
-                                    :class="{goCart2:detail.can_buy!=1||detail.status!=1||can_buy!=1}"
-                                    text="加入购物车"
-                                    @click="open('b',1)"
-          />
-          <van-goods-action-big-btn class="toPay"
-                                    :class="{toPay2:detail.can_buy!=1||detail.status!=1||can_buy!=1}"
-                                    primary
-                                    text="立即购买"
-                                    @click="open('c',1)"
-          />
+          <van-goods-action-mini-btn @click="toCart" :icon="require('../../assets/tubiao/gc.png')" text="购物车" />
+          <van-goods-action-mini-btn @click="toKefu" :icon="require('../../assets/tubiao/kfz.png')" text="客服" />
+          <van-goods-action-big-btn class="goCart" :class="{ goCart2: detail.can_buy != 1 || detail.status != 1 || can_buy != 1 }"
+            text="加入购物车" @click="open('b', 1)" />
+          <van-goods-action-big-btn class="toPay" :class="{ toPay2: detail.can_buy != 1 || detail.status != 1 || can_buy != 1 }"
+            primary text="立即购买" @click="open('c', 1)" />
         </van-goods-action>
       </div>
       <!--    规格弹窗-->
       <div class="popupBox">
         <van-popup v-model="showAll" position="bottom">
           <div class="popup">
-            <div class="close" @click="showAll=false">
-              <van-icon size="18px" name="cross"/>
+            <div class="close" @click="showAll = false">
+              <van-icon size="18px" name="cross" />
             </div>
-            <div v-if="selectId==1">
+            <div v-if="selectId == 1">
               <div class="shopBox">
                 <div class="shopImg">
-                  <img style="border-radius: 5px;object-fit: cover" class="img"
-                       :src="detail.image_path"
-                       alt="">
+                  <img style="border-radius: 5px;object-fit: cover" class="img" :src="detail.image_path" alt="">
                 </div>
                 <div style="width: 65%;">
                   <div class="modelName">{{ modelName }}</div>
@@ -129,51 +110,54 @@
                 <div class="titleBox">
                   <div class="title">规格</div>
                   <div class="speBox">
-                    <div class="spe" :class="{spe1:detail.flag==1?item.ggid==modelId:item.id==modelId}"
-                         @click="changemodelId('规格',item)"
-                         v-for="(item,index) in model"
-                         :key="index">{{ item.name }}
+                    <div class="spe" :class="{ spe1: detail.flag == 1 ? item.ggid == modelId : item.id == modelId }"
+                      @click="changemodelId('规格', item)" v-for="(item, index) in model" :key="index">{{ item.name }}
                     </div>
                   </div>
                 </div>
+
+                <div class="titleBox" v-if="tasteList.length > 0">
+                  <div class="title">口味</div>
+                  <div class="speBox">
+                    <div class="spe" :class="{ spe1: selectedTaste == taste }" @click="selectedTaste = taste"
+                      v-for="(taste, index) in tasteList" :key="index">{{ taste }}
+                    </div>
+                  </div>
+                </div>
+
+
                 <div class="titleBox valueNumber">
                   <div class="title">数量</div>
                   <div class="speBox">
-                    <van-stepper @change="changeNum" v-model="valueNumber"/>
+                    <van-stepper @change="changeNum" v-model="valueNumber" />
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="selectId==2">
+            <div v-if="selectId == 2">
               <div class="addressTitle">{{ addList.length > 0 ? '选择收货地址' : '暂无可配送地址' }}</div>
               <div class="address">
-                <van-address-list
-                    v-model="chosenAddressId"
-                    @edit="editAddress"
-                    @select="changeDefault"
-                    :list="addList"
-                    :disabled-list="disabledList"
-                    disabled-text="以下地址超出配送范围"
-                />
+                <van-address-list v-model="chosenAddressId" @edit="editAddress" @select="changeDefault" :list="addList"
+                  :disabled-list="disabledList" disabled-text="以下地址超出配送范围" />
                 <!--                "can_ship": "1", //是否支持商户自配送 1-支持,0-不支持-->
                 <!--                "can_same": "0", //是否支持快递配送 1-支持,0-不支持-->
               </div>
             </div>
             <!--          按钮-->
             <div class="footer">
-              <div class="button" v-if="status=='a'">
+              <div class="button" v-if="status == 'a'">
                 <div class="resetting" @click="resetting">加入购物车</div>
                 <div class="resetting complete" @click="toConfirmOrder">立即订购</div>
               </div>
-              <div class="button" v-if="status=='b'">
+              <div class="button" v-if="status == 'b'">
                 <div class="resetting" style="width: 100%;" @click="resetting">加入购物车</div>
               </div>
-              <div class="button" v-if="status=='c'">
+              <div class="button" v-if="status == 'c'">
                 <div class="resetting complete" style="width: 100%;" @click="toConfirmOrder">立即订购</div>
               </div>
-              <div class="button" v-if="status=='d'">
+              <div class="button" v-if="status == 'd'">
                 <div class="resetting complete" @click="addNewAddress"
-                     style="width: 100%;background-image: linear-gradient(to right,#F55655,#DB0605);">添加新地址
+                  style="width: 100%;background-image: linear-gradient(to right,#F55655,#DB0605);">添加新地址
                 </div>
               </div>
             </div>
@@ -185,12 +169,12 @@
 </template>
 <script>
 import ShopList from "@/components/ShopList.vue";
-import {addCart, dgseladdress, getCakeDetails} from "@/api/detail";
-import {mrscaddress} from "@/api/cakeAddress";
+import { addCart, dgseladdress, getCakeDetails } from "@/api/detail";
+import { mrscaddress } from "@/api/cakeAddress";
 
 export default {
   name: "ProductDetail",
-  components: {ShopList},
+  components: { ShopList },
   data() {
     return {
       bannerList: [],
@@ -245,7 +229,10 @@ export default {
       can_buy: "",
       productCake: [],
       setTimer: null,
-      delivery: null
+      delivery: null,
+
+      tasteList: [],        // 新增：口味列表数组
+      selectedTaste: '',    // 新增：当前选中的口味
     }
   },
   methods: {
@@ -285,7 +272,7 @@ export default {
         spec_id: Number(this.modelId),	//是	num	型号ID
         quantity: Number(this.valueNumber),	//是	num	数量
         cpbs: this.detail.cpbs,
-        taste_name: this.modelTastes
+        taste_name: this.selectedTaste || this.modelTastes
       }).then(res => {
         this.$toast(res.msg)
 
@@ -295,7 +282,7 @@ export default {
       })
     },
     editAddress(e) {
-      this.$router.push({path: "/cakeExitAdress", query: {id: e.id}})
+      this.$router.push({ path: "/cakeExitAdress", query: { id: e.id } })
     },
     changemodelId(type, item) {
       //1-规格 2-重量 3-颜色 4-型号
@@ -311,6 +298,19 @@ export default {
       this.modelTastes = item.tastes || ""
       this.selectList[0].text = this.modelName
       this.getDgseladdress(this.modelId)
+
+
+      // 新增：处理口味列表
+      if (item.tastes) {
+        this.tasteList = item.tastes.split(',')
+        if (this.tasteList.length > 0) {
+          this.selectedTaste = this.tasteList[0]
+        }
+      } else {
+        this.tasteList = []
+        this.selectedTaste = ''
+      }
+
     },
     // 价格处理
     changePrice1(price) {
@@ -371,9 +371,9 @@ export default {
         act: 2,
         spec_id: Number(this.modelId),	//是	num	型号ID
         cpbs: this.detail.cpbs,
-        taste_name: this.modelTastes
+        taste_name: this.selectedTaste || this.modelTastes
       }
-      this.$router.push({path: "/confirmOrder", query: {data: JSON.stringify(data)}})
+      this.$router.push({ path: "/confirmOrder", query: { data: JSON.stringify(data) } })
     },
     addNewAddress() {
       this.$router.push("/cakeExitAdress")
@@ -438,48 +438,58 @@ export default {
       getCakeDetails({
         id, token
       }).then(res => {
-            this.loadingflag = false
-            if (!res.data) {
-              this.$toast(res.msg)
-              this.setTimer = setTimeout(() => {
-                this.$router.go(-1)
-              }, 1000)
+        this.loadingflag = false
+        if (!res.data) {
+          this.$toast(res.msg)
+          this.setTimer = setTimeout(() => {
+            this.$router.go(-1)
+          }, 1000)
+        }
+        if (res.code == 200 && res.data) {
+          this.detail = res.data.show || {}
+          this.address_id = res.data.show.id
+          this.model = this.detail.gueige
+          this.productCake = res.data.product_tuijian
+          if (this.model.length > 0) {
+            if (this.detail.flag == 1) {
+              this.modelId = this.model[0].ggid
+            } else {
+              this.modelId = this.model[0].id
             }
-            if (res.code == 200 && res.data) {
-              this.detail = res.data.show || {}
-              this.address_id = res.data.show.id
-              this.model = this.detail.gueige
-              this.productCake = res.data.product_tuijian
-              if (this.model.length > 0) {
-                if (this.detail.flag == 1) {
-                  this.modelId = this.model[0].ggid
-                } else {
-                  this.modelId = this.model[0].id
-                }
-                this.modelName = this.model[0].name
-                this.modelPrice = this.model[0].price
-                this.modelTastes = this.model[0].tastes || ""
-                this.can_buy = this.model[0].can_buy
+            this.modelName = this.model[0].name
+            this.modelPrice = this.model[0].price
+            this.modelTastes = this.model[0].tastes || ""
+            this.can_buy = this.model[0].can_buy
+
+            // 新增：初始化口味列表
+            if (this.model[0].tastes) {
+              this.tasteList = this.model[0].tastes.split(',')
+              if (this.tasteList.length > 0) {
+                this.selectedTaste = this.tasteList[0]
               }
-              if (token) {
-                this.getDgseladdress(this.modelId)
-              }
-              this.selectList[0].text = this.modelName ? this.modelName : this.detail.name
-              this.selectList[2].text = this.detail.label_name
-              if (this.detail.banner) {
-                this.bannerList = this.detail.banner
-              } else {
-                this.detail.imgs.split("-").filter(item2 => item2 != "").forEach(item => {
-                  this.bannerList.push({
-                    l_path: item
-                  })
-                })
-              }
-            } else if (res.code == -1) {
-              localStorage.removeItem("token")
-              this.getCakeDetail(this.$route.query.id)
             }
+
+
           }
+          if (token) {
+            this.getDgseladdress(this.modelId)
+          }
+          this.selectList[0].text = this.modelName ? this.modelName : this.detail.name
+          this.selectList[2].text = this.detail.label_name
+          if (this.detail.banner) {
+            this.bannerList = this.detail.banner
+          } else {
+            this.detail.imgs.split("-").filter(item2 => item2 != "").forEach(item => {
+              this.bannerList.push({
+                l_path: item
+              })
+            })
+          }
+        } else if (res.code == -1) {
+          localStorage.removeItem("token")
+          this.getCakeDetail(this.$route.query.id)
+        }
+      }
       )
     }
   },
@@ -491,11 +501,11 @@ export default {
 
     document.body.scrollTop = 0
 
-// firefox
+    // firefox
 
     document.documentElement.scrollTop = 0
 
-// safari
+    // safari
 
     window.pageYOffset = 0
   },
@@ -555,9 +565,11 @@ export default {
       font-size: 13px;
       align-items: center;
     }
+
     .label::-webkit-scrollbar {
       display: none
     }
+
     .price {
       color: #CA4543;
       font-weight: bold;
@@ -909,7 +921,10 @@ export default {
   height: 25px;
 }
 
-.van-stepper__minus::after, .van-stepper__minus::before, /deep/ .van-stepper__plus::after, /deep/ .van-stepper__plus::before {
+.van-stepper__minus::after,
+.van-stepper__minus::before,
+/deep/ .van-stepper__plus::after,
+/deep/ .van-stepper__plus::before {
   background-color: #ffffff;
 }
 
@@ -931,6 +946,7 @@ export default {
     display: block;
   }
 }
+
 .contentFlag /deep/p {
   margin: 0;
 }

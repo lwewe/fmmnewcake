@@ -34,7 +34,7 @@
       <div class="pd0">
         <div class="banner1" v-for="(item, index) in imgurlbox" :key="item.id" v-if="item.id !=25"
           @click="goindex(index + 1, index <= 2 || index == 6 ? 1 : 2)">
-          <img class="img" :src="item.img" alt="">
+          <img class="img" :src="item.img" alt="" >
         </div>
       </div>
     </div>

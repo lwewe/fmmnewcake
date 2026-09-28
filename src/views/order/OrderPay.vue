@@ -18,7 +18,8 @@
         </div>
       </div>
       <div class="pickupMethodBox">
-        <div v-for="(item, index) in flagA ? pickupMethod.slice(2, 3) : num1 == 3 ? pickupMethod.slice(3) : pickupMethod.slice(0, 2)"
+        <div
+          v-for="(item, index) in flagA ? pickupMethod.slice(2, 3) : num1 == 3 ? pickupMethod.slice(3) : pickupMethod.slice(0, 2)"
           :key="index" class="pickupMethod" :class="{ pickupMethod2: packFlag == item.packFlag }"
           @click="changePackFlag(item)">
           <div class="circle" v-if="packFlag == item.packFlag">
@@ -49,11 +50,12 @@
         <div v-for="item in goods" :key="item.code" class="goodItem">
           <div class="goodImg">
             <img class="img"
-              :src="item.displayImage || item.detail?.image || item.detail?.img    || item.itemImage || item.goodImg || item.imageUrl || item.detail.product_img || item.detail.detailImgUrl"
+              :src="item.displayImage || item.detail?.image || item.detail?.img || item.itemImage || item.goodImg || item.imageUrl || item.detail.product_img || item.detail.detailImgUrl"
               alt="">
           </div>
           <div class="rightBox">
-            <div>{{ item.displayName  || item.itemName || item.goodName || item.nameCn || item.detail.product_name || item.detail.title }}
+            <div>{{ item.displayName || item.itemName || item.goodName || item.nameCn || item.detail.product_name ||
+              item.detail.title }}
             </div>
             <div class="items">
               <div v-if="item.items">
@@ -68,11 +70,12 @@
               <div class="quantity"></div>
               <div class="priceBox">
                 <span>￥</span>
-                {{ num1 == 2 && !flag ? (item.priceHead || item.fullPrice || item.price) : (item.sumprice || item.price || item.fullPrice || item.detail?.salePrice) }}
+                {{ num1 == 2 && !flag ? (item.priceHead || item.fullPrice || item.price) : (item.sumprice || item.price
+                  || item.fullPrice || item.detail?.salePrice) }}
                 <!-- {{ num1 == 2 && !flag ? item.priceHead : (item.sumprice || item.price || item.fullPrice ||
                   item.detail.salePrice) }}  -->
-                  
-                  <span class="quantity">x {{ item.count || item.quantity }}</span>
+
+                <span class="quantity">x {{ item.count || item.quantity }}</span>
               </div>
             </div>
           </div>
@@ -218,69 +221,69 @@ export default {
     };
   },
   created() {
-  if (localStorage.getItem("openid")) {
-    this.openid = localStorage.getItem("openid")
-  }
-  this.flagA = this.$route.query.flag
-  if (this.flagA) {
-    if (sessionStorage.getItem('address_Item')) {
-      this.address_Item = JSON.parse(sessionStorage.getItem('address_Item'))
-      this.location = this.address_Item.addr + this.address_Item.number
-      this.locationdetail = this.address_Item.contact
-      this.address_id = this.address_Item.id
+    if (localStorage.getItem("openid")) {
+      this.openid = localStorage.getItem("openid")
     }
-    this.packFlag = 2
-  }
+    this.flagA = this.$route.query.flag
+    if (this.flagA) {
+      if (sessionStorage.getItem('address_Item')) {
+        this.address_Item = JSON.parse(sessionStorage.getItem('address_Item'))
+        this.location = this.address_Item.addr + this.address_Item.number
+        this.locationdetail = this.address_Item.contact
+        this.address_id = this.address_Item.id
+      }
+      this.packFlag = 2
+    }
 
-  // 🔧 不要从 verify 获取，直接从 goods 获取
-  // this.verify = JSON.parse(sessionStorage.getItem("verify"))
-  // if (this.verify) {
-  //   this.goods = this.verify.slice(0, 2)
-  // }
-  
-  this.num1 = this.$route.query.num1
-  this.num2 = this.$route.query.num2
-  this.type = this.$route.query.type
-  this.deliveryPrice = Number(this.$route.query.deliveryPrice).toFixed(2)
-  if (this.num1 == 3 && !this.flagA) {
-    this.packFlag = 1
-  }
-  
-  this.getsinglelist()
-  this.getcard()
-  
-   // 统一从 goods 获取数据
-  const goodsData = JSON.parse(sessionStorage.getItem("goods")) || [];
-  console.log(goodsData)
-  // 🔧 格式化商品数据，统一字段
- const formattedGoods = goodsData.map(item => ({
-  ...item,
-  productId: item.productId || item.detail?.id || item.detail?.product_id || item.detail?.itemNo || "",
-  displayName: item.detail?.name || item.detail?.showNameCn || item.nameCn || item.detail?.product_name || item.detail?.title || item.itemName || '商品',
-  // 🔧 修复图片：从 detail.img 或 detail.condimentRoundList 中取
-  displayImage: item.detail?.coverUrl || item.detail?.img || item.detail?.imageUrl || item.imageUrl || item.itemImage || '',
-  displaySpec: item.specifications || item.specKey || item.detail?.name || '',
-  displayPrice: item.fullPrice || item.price || item.detail?.price || item.detail?.salePrice || 0,
-  displayCount: item.count || 1
-}));
-  
-  this.shopcarlist = formattedGoods;
-  this.verify = formattedGoods;
-  this.goods = formattedGoods.slice(0, 2);
-  
-  // 计算总价
-  this.sumprice = 0;
-  formattedGoods.forEach(item => {
-    this.sumprice += item.displayPrice * item.displayCount;
-  });
-  
-  // 外卖模式加上配送费
-  if (this.flagA) {
-    this.sumprice += Number(this.deliveryPrice);
-  }
-  
-  this.storecode = this.shopcarlist[0]?.storeCode || this.shopcarlist[0]?.storeId
-},
+    // 🔧 不要从 verify 获取，直接从 goods 获取
+    // this.verify = JSON.parse(sessionStorage.getItem("verify"))
+    // if (this.verify) {
+    //   this.goods = this.verify.slice(0, 2)
+    // }
+
+    this.num1 = this.$route.query.num1
+    this.num2 = this.$route.query.num2
+    this.type = this.$route.query.type
+    this.deliveryPrice = Number(this.$route.query.deliveryPrice).toFixed(2)
+    if (this.num1 == 3 && !this.flagA) {
+      this.packFlag = 1
+    }
+
+    this.getsinglelist()
+    this.getcard()
+
+    // 统一从 goods 获取数据
+    const goodsData = JSON.parse(sessionStorage.getItem("goods")) || [];
+    console.log(goodsData)
+    // 🔧 格式化商品数据，统一字段
+    const formattedGoods = goodsData.map(item => ({
+      ...item,
+      productId: item.productId || item.detail?.id || item.detail?.product_id || item.detail?.itemNo || "",
+      displayName: item.detail?.name || item.detail?.showNameCn || item.nameCn || item.detail?.product_name || item.detail?.title || item.itemName || '商品',
+      // 🔧 修复图片：从 detail.img 或 detail.condimentRoundList 中取
+      displayImage: item.detail?.coverUrl || item.detail?.img || item.detail?.imageUrl || item.imageUrl || item.itemImage || '',
+      displaySpec: item.specifications || item.specKey || item.detail?.name || '',
+      displayPrice: item.fullPrice || item.price || item.detail?.price || item.detail?.salePrice || 0,
+      displayCount: item.count || 1
+    }));
+
+    this.shopcarlist = formattedGoods;
+    this.verify = formattedGoods;
+    this.goods = formattedGoods.slice(0, 2);
+
+    // 计算总价
+    this.sumprice = 0;
+    formattedGoods.forEach(item => {
+      this.sumprice += item.displayPrice * item.displayCount;
+    });
+
+    // 外卖模式加上配送费
+    if (this.flagA) {
+      this.sumprice += Number(this.deliveryPrice);
+    }
+
+    this.storecode = this.shopcarlist[0]?.storeCode || this.shopcarlist[0]?.storeId
+  },
   methods: {
     // 展开
     unfold() {
@@ -370,213 +373,221 @@ export default {
     },
     // 去结算
     // 去结算
-toPay() {
-  if (this.num1 == 3 || this.num1 == 1 && this.flagA || this.num1 == 2 && this.flagA) {
-    this.$router.push({
-      path: "/checkstand",
-      query: {
-        flag: this.flagA,
-        num1: this.num1,
-        num2: this.num2,
-        type: this.type,
-        shopName: this.$route.query.shopName,
-        deliveryPrice: this.deliveryPrice || 0
+    toPay() {
+      if (this.num1 == 3 || this.num1 == 1 && this.flagA || this.num1 == 2 && this.flagA) {
+        this.$router.push({
+          path: "/checkstand",
+          query: {
+            flag: this.flagA,
+            num1: this.num1,
+            num2: this.num2,
+            type: this.type,
+            shopName: this.$route.query.shopName,
+            deliveryPrice: this.deliveryPrice || 0
+          }
+        })
+        return
       }
-    })
-    return
-  }
-  this.$toast.loading({
-    message: '加载中...',
-    forbidClick: true,
-    duration: 100000
-  });
+      this.$toast.loading({
+        message: '加载中...',
+        forbidClick: true,
+        duration: 100000
+      });
 
-  // ✅ 从多个来源获取 shopId
-  const shopId = this.goods[0]?.storeid 
-    || this.shopcarlist[0]?.storeid 
-    || this.shopcarlist[0]?.storeCode
-    || this.$route.query.storeid 
-    || '';
+      // ✅ 从多个来源获取 shopId
+      const shopId = this.goods[0]?.storeid
+        || this.shopcarlist[0]?.storeid
+        || this.shopcarlist[0]?.storeCode
+        || this.$route.query.storeid
+        || '';
 
-  // ✅ 验证必要字段
-  if (!shopId) {
-    this.$toast.clear();
-    this.$toast('店铺信息缺失');
-    return;
-  }
+      // ✅ 验证必要字段
+      if (!shopId) {
+        this.$toast.clear();
+        this.$toast('店铺信息缺失');
+        return;
+      }
 
-  let data = {
-    "shopId": shopId,
-    type: this.type,
-    "eatType": this.packFlag,
-    "products": [],
-    "phone": this.phone,
-  }
+      let data = {
+        "shopId": shopId,
+        type: this.type,
+        "eatType": this.packFlag,
+        "products": [],
+        "phone": this.phone,
+      }
 
-  // ✅ 使用 verify（完整商品列表）
-  const verify = this.verify.length > 0 ? this.verify : this.shopcarlist;
-  
-  verify.forEach(item => {
-    const isMeal = item.detail?.isMultiSpec == 1;
-    
-    data.products.push({
-      "productId": item.productId || item.detail?.product_id || item.detail?.itemNo || item.code || "",
-      "linkId": isMeal ? (item.detail?.linkId || "") : (item.linkId || item.code || ""),
-      "quantity": item.count || item.quantity || 1,
-      "nameCn": item.displayName || item.nameCn || item.detail?.product_name || "",
-      "imageUrl": item.displayImage || item.imageUrl || item.detail?.product_img || "",
-      "sellPrice": isMeal ? (item.fullPrice || item.detail?.salePrice || 0) : (item.priceHead || item.detail?.salePrice || 0),
-      "oPrice": item.fullPrice || item.price || 0,
-      "config": item.specifications || item.listname || "",
-      "selected": isMeal && item.detail?.selected?.length > 0
-        ? [{
-            round: 0,
-            products: item.detail.selected.map(s => ({
-              linkId: s.linkId || "",
-              productId: s.productId || s.linkId || "",
-              quantity: 1
-            }))
-          }]
-        : [{
-            round: 0,
-            products: []
-          }]
-    });
+      // ✅ 使用 verify（完整商品列表）
+      const verify = this.verify.length > 0 ? this.verify : this.shopcarlist;
 
-    // ✅ 处理麦当劳套餐的 selected（原有逻辑）
-    if (item.detail) {
-      data.products.forEach(item5 => {
-        let list = item.detail.details 
-          ? (item.detail.details.optional || item.detail.details.spu_specs || item.detail.details.specifications) 
-          : (item.detail.specItems || []);
-        
-        if (list && list.length > 0) {
-          list.forEach((item2, index2) => {
-            if (item2.sku_infos) {
-              if ((item.productId || item.detail.product_id || item.detail.itemNo) == item5.productId) {
-                item2.sku_infos.forEach(item3 => {
-                  if (item3.checked) {
-                    item5.selected.forEach(item6 => {
-                      item6.round = 0;
-                      item6.products.push({
-                        "linkId": item2.id,
-                        "productId": item3.id,
-                        "quantity": 1
-                      });
-                    });
-                  }
-                });
-              }
-            } else {
-              // 处理其他品牌（num1 == 5, 6, 7）的逻辑
-              if (this.num1 == 5 && item.detail.product_id == item5.productId) {
-                item2.values.forEach((item3, index3) => {
-                  if (item3.checked == 1) {
-                    item.detail.details.sku_infos.forEach((item7) => {
-                      item7.specs.forEach((item8, index8) => {
-                        if (item3.code == item8.spec_code && item2.code == item8.code) {
-                          item8.checked = 1;
-                        }
-                      });
-                      if (item7.specs.filter(item => item.checked == 1).length == item7.specs.length) {
+      verify.forEach(item => {
+        const isMeal = item.detail?.isMultiSpec == 1;
+
+        data.products.push({
+          "productId": item.productId || item.detail?.product_id || item.detail?.itemNo || item.code || "",
+          "linkId": isMeal ? (item.detail?.linkId || "") : (item.linkId || item.code || ""),
+          "quantity": item.count || item.quantity || 1,
+          "nameCn": item.displayName || item.nameCn || item.detail?.product_name || "",
+          "imageUrl": item.displayImage || item.imageUrl || item.detail?.product_img || "",
+          "sellPrice": isMeal ? (item.fullPrice || item.detail?.salePrice || 0) : (item.priceHead || item.detail?.salePrice || 0),
+          "oPrice": item.fullPrice || item.price || 0,
+          "config": item.specifications || item.listname || "",
+          "selected": isMeal && item.detail?.selected?.length > 0
+            ? [{
+              round: 0,
+              products: item.detail.selected.map(s => ({
+                linkId: s.linkId || "",
+                productId: s.productId || s.linkId || "",
+                quantity: 1
+              }))
+            }]
+            : [{
+              round: 0,
+              products: []
+            }]
+        });
+        const currentProduct = data.products[data.products.length - 1];
+        // ✅ 处理麦当劳套餐的 selected（原有逻辑）
+        if (item.detail) {
+          data.products.forEach(item5 => {
+            let list = item.detail.details
+              ? (item.detail.details.optional || item.detail.details.spu_specs || item.detail.details.specifications)
+              : (item.detail.specItems || []);
+
+            if (list && list.length > 0) {
+              list.forEach((item2, index2) => {
+                if (item2.sku_infos) {
+                  if ((item.productId || item.detail.product_id || item.detail.itemNo) == item5.productId) {
+                    item2.sku_infos.forEach(item3 => {
+                      if (item3.checked) {
                         item5.selected.forEach(item6 => {
                           item6.round = 0;
-                          item6.products = [];
                           item6.products.push({
-                            "linkId": "",
-                            "productId": item7.code,
+                            "linkId": item2.id,
+                            "productId": item3.id,
                             "quantity": 1
                           });
-                          item6.products = this.unique(item6.products);
                         });
                       }
                     });
                   }
-                });
-              } else if (this.num1 == 6 && item.detail.product_id == item5.productId) {
-                item2.ingredients.forEach((item3, index3) => {
-                  if (item3.checked) {
-                    item.detail.details.sku_infos.forEach((item7) => {
-                      item7.values.forEach((item8, index8) => {
-                        if (item3.name == item8.spec_name) {
-                          item8.checked = true;
-                        }
-                      });
-                      if (item7.values.filter(item => item.checked).length == item7.values.length) {
-                        item5.selected.forEach(item6 => {
-                          item6.round = 0;
-                          item6.products = [];
-                          item6.products.push({
-                            "linkId": "",
-                            "productId": item7.code,
-                            "quantity": 1
+                } else {
+                  // 处理其他品牌（num1 == 5, 6, 7）的逻辑
+                  if (this.num1 == 5 && item.detail.product_id == item5.productId) {
+                    item2.values.forEach((item3, index3) => {
+                      if (item3.checked == 1) {
+                        item.detail.details.sku_infos.forEach((item7) => {
+                          item7.specs.forEach((item8, index8) => {
+                            if (item3.code == item8.spec_code && item2.code == item8.code) {
+                              item8.checked = 1;
+                            }
                           });
-                          item6.products = this.uniqueProducts(item6.products);
+                          if (item7.specs.filter(item => item.checked == 1).length == item7.specs.length) {
+                            item5.selected.forEach(item6 => {
+                              item6.round = 0;
+                              item6.products = [];
+                              item6.products.push({
+                                "linkId": "",
+                                "productId": item7.code,
+                                "quantity": 1
+                              });
+                              item6.products = this.unique(item6.products);
+                            });
+                          }
+                        });
+                      }
+                    });
+                  } else if (this.num1 == 6 && item.detail.product_id == item5.productId) {
+                    const configArr = [];
+                    item2.ingredients.forEach(item3 => {
+                      if (item3.checked) configArr.push(item3.name);
+                    });
+
+                    const matched = (item.detail.details.sku_infos || []).find(sku => {
+                      const values = sku.values.map(v => v.spec_name);
+                      return values.length === configArr.length &&
+                        values.every((v, i) => v === configArr[i]);
+                    });
+
+                    if (matched) {
+                      currentProduct.selected = [{          // ← 只改这一行：item5 → currentProduct
+                        round: 0,
+                        products: [{
+                          linkId: "",
+                          productId: matched.code,
+                          quantity: item.count || item.quantity || 1
+                        }]
+                      }];
+                    } else if (item.skuCode) {
+                      currentProduct.selected = [{          // ← 兜底：item5 → currentProduct
+                        round: 0,
+                        products: [{
+                          linkId: "",
+                          productId: item.skuCode,
+                          quantity: item.count || item.quantity || 1
+                        }]
+                      }];
+                    }
+                  }
+                  else if (this.num1 == 7 && item.detail.itemNo == item5.productId) {
+                    item2.specValueList.forEach((item3, index3) => {
+                      if (item3.recommendFlag == 1) {
+                        item.detail.skuCombinList.forEach((item7) => {
+                          item7.skusSpecs.forEach((item8, index8) => {
+                            if (item3.name == item8.specItemValueName) {
+                              item8.recommendFlag = 1;
+                            }
+                          });
+                          if (item7.skusSpecs.filter(item => item.recommendFlag == 1).length == item7.skusSpecs.length) {
+                            item5.selected.forEach(item6 => {
+                              item6.round = 0;
+                              item6.products.push({
+                                "linkId": "",
+                                "productId": item7.skuNo,
+                                "quantity": 1
+                              });
+                            });
+                            item5.linkId = item7.skuNo;
+                          }
                         });
                       }
                     });
                   }
-                });
-              } else if (this.num1 == 7 && item.detail.itemNo == item5.productId) {
-                item2.specValueList.forEach((item3, index3) => {
-                  if (item3.recommendFlag == 1) {
-                    item.detail.skuCombinList.forEach((item7) => {
-                      item7.skusSpecs.forEach((item8, index8) => {
-                        if (item3.name == item8.specItemValueName) {
-                          item8.recommendFlag = 1;
-                        }
-                      });
-                      if (item7.skusSpecs.filter(item => item.recommendFlag == 1).length == item7.skusSpecs.length) {
-                        item5.selected.forEach(item6 => {
-                          item6.round = 0;
-                          item6.products.push({
-                            "linkId": "",
-                            "productId": item7.skuNo,
-                            "quantity": 1
-                          });
-                        });
-                        item5.linkId = item7.skuNo;
-                      }
-                    });
-                  }
-                });
-              }
+                }
+              });
+            }
+          });
+        } else {
+          // 没有 detail 的商品，清空 selected
+          data.products.forEach(item5 => {
+            if ((item.productId || item.detail?.product_id || item.detail?.itemNo) == item5.productId) {
+              item5.selected = [];
             }
           });
         }
       });
-    } else {
-      // 没有 detail 的商品，清空 selected
-      data.products.forEach(item5 => {
-        if ((item.productId || item.detail?.product_id || item.detail?.itemNo) == item5.productId) {
-          item5.selected = [];
+
+      data.products = JSON.stringify(data.products);
+
+      create_order(data).then(res => {
+        this.$toast.clear();
+        if (res.code == 200) {
+          this.$router.replace({
+            path: "/checkstand",
+            query: {
+              flag: this.flagA,
+              num1: this.num1,
+              num2: this.num2,
+              type: this.type,
+              shopName: this.$route.query.shopName,
+              deliveryPrice: this.deliveryPrice || 0,
+              orderid: res.data.orderid
+            }
+          });
+        } else {
+          this.$toast(res.msg);
         }
       });
-    }
-  });
-
-  data.products = JSON.stringify(data.products);
-
-  create_order(data).then(res => {
-    this.$toast.clear();
-    if (res.code == 200) {
-      this.$router.replace({
-        path: "/checkstand",
-        query: {
-          flag: this.flagA,
-          num1: this.num1,
-          num2: this.num2,
-          type: this.type,
-          shopName: this.$route.query.shopName,
-          deliveryPrice: this.deliveryPrice || 0,
-          orderid: res.data.orderid
-        }
-      });
-    } else {
-      this.$toast(res.msg);
-    }
-  });
-},
+    },
     uniqueProducts(products) {
       const map = new Map()
       return products.filter(item => {

@@ -388,6 +388,25 @@ export default {
     },
     // 加入购物车
     addshopcar() {
+
+       let matchedSkuCode = ''
+  if (this.num1 == 6 && this.detalilist.details && this.detalilist.details.sku_infos) {
+    const configArr = []
+    this.list.forEach(item => {
+      item.ingredients.forEach(item2 => {
+        if (item2.checked == 1) configArr.push(item2.name)
+      })
+    })
+    const matched = this.detalilist.details.sku_infos.find(sku => {
+      const values = sku.values.map(v => v.spec_name)
+      return values.length === configArr.length &&
+             values.every((v, i) => v === configArr[i])
+    })
+    if (matched) matchedSkuCode = matched.code
+  }
+  // ===== 新增结束 =====
+
+
       var all = ""
       if (this.num1 == 1 || this.num1 == 4) {
         if (this.num1 == 1 && this.flag) {
@@ -573,7 +592,8 @@ export default {
           fullPrice: this.fullPrice,
           count: this.count,
           accessories: this.accessories.length > 0 ? this.accessories : [],
-          skuId: this.skuId
+          skuId: this.skuId,
+          skuCode: matchedSkuCode   // ← 只加这一行
         })
       }
       // console.log(this.goods)

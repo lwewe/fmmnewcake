@@ -243,7 +243,7 @@ export default {
           // console.log(res);
           this.store = res.data
           sessionStorage.setItem("deliveryPrice", this.store.deliveryPrice)
-          this.$router.push({ path: '/selectproduct', query: { 'num1': this.num1, storeid: this.store.storeCode, flag: true, num2: this.num2 } })
+          this.$router.push({ path: '/SelectProductwmkdj', query: { 'num1': this.num1, storeid: this.store.storeCode, flag: true, num2: this.num2 } })
         } else {
           this.$toast(res.msg)
         }

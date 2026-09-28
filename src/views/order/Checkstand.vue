@@ -630,6 +630,59 @@ export default {
             sumdiscountPrice: ((item.fullPrice || item.price) * (item.count || 1)).toFixed(2)
           };
         } else {
+            // 🔧 新增：menuFlag == 3 优先处理（只加这一段，下面老逻辑不动）
+  const menuFlag = detail.menuFlag || item.menuFlag || '2';
+  if (menuFlag == 3 && detail.groupRoundList) {
+    const items = [];
+    const condimentItems = [];
+    let childLinkId = '';
+    let finalAmount = detail.amount || item.fullPrice || item.price || 0;
+    let finalImage = detail.img || detail.image || item.itemImage || '';
+
+    detail.groupRoundList.forEach(round => {
+      round.groupItemList?.forEach(gItem => {
+        if (gItem.defaultSelected == 1 || gItem.defaultSelected === '1') {
+          childLinkId = gItem.linkId;
+          finalAmount = gItem.amount || finalAmount;
+          finalImage = gItem.imageUrl || finalImage;
+
+          if (gItem.condimentRoundList) {
+            gItem.condimentRoundList.forEach(round2 => {
+              round2.condimentItemList?.forEach(cond => {
+                if (cond.defaultSelected == 1 || cond.defaultSelected === '1') {
+                  items.push({
+                    name: cond.showNameCn || cond.menuCn,
+                    count: cond.quantity || 1
+                  });
+                  condimentItems.push({
+                    condimentLinkId: round2.condimentLinkId || '',
+                    linkId: cond.linkId,
+                    quantity: cond.quantity || 1
+                  });
+                }
+              });
+            });
+          }
+        }
+      });
+    });
+
+    return {
+      itemName: detail.name || item.itemName,
+      itemImage: finalImage,
+      amount: finalAmount,
+      discountPrice: item.fullPrice || item.price,
+      quantity: item.count || item.quantity || 1,
+      linkId: detail.linkId || item.linkId,          // 🔧 6017
+      childLinkId: childLinkId,                      // 🔧 100125825
+      items: items,
+      listname: item.specifications || '',
+      condimentItems: condimentItems,
+      sumprice: (Number(finalAmount) * (item.count || 1)).toFixed(2),   // 🔧 9.94
+      sumdiscountPrice: ((item.fullPrice || item.price) * (item.count || 1)).toFixed(2)
+    };
+  }
+  // ========== 肯德基/必胜客格式 ==========
           // ========== 肯德基/必胜客格式 ==========
           const items = [];
           const condimentItems = [];

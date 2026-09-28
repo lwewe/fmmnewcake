@@ -396,36 +396,33 @@ export default {
       this.show = !this.show
 
     },
-    goselect() {
-      if (this.num1 == 5) {
-        // 麦当劳
-        this.$router.push({
-          path: '/selectnxproduct',
-          query: {
-            num1: this.num1,
-            num2: this.num2,
-            storeid: this.num1 == 3 ? this.dialoglist.storeCode : this.dialoglist.id || this.dialoglist.dpid,
-            type: this.imgname,
-            isCollect: this.active == 1 ? 3 : this.dialoglist.isCollect,
-          }
-        })
-        console.log(this.dialoglist, "this.active")
-      } else {
-        // 麦当劳
-        this.$router.push({
-          path: '/selectproduct',
-          query: {
-            num1: this.num1,
-            num2: this.num2,
-            storeid: this.num1 == 3 ? this.dialoglist.storeCode : this.dialoglist.id || this.dialoglist.dpid,
-            type: this.imgname,
-            isCollect: this.active == 1 ? 3 : this.dialoglist.isCollect,
-          }
-        })
-        console.log(this.dialoglist, "this.active")
-      }
+     goselect() {
+  let path = ''
+  if (this.num1 == 1) {
+    // 麦当劳 → 独立文件
+    path = '/selectproductmdl'
+  } else if (this.num1 == 2) {
+    // 肯德基 → 独立文件
+    path = '/SelectProductKDJ'
+  } else if (this.num1 == 5) {
+    // 奈雪
+    path = '/selectnxproduct'
+  } else {
+    // 必胜客、其他
+    path = '/selectproduct'
+  }
 
-    },
+  this.$router.push({
+    path: path,
+    query: {
+      num1: this.num1,
+      num2: this.num2,
+      storeid: this.num1 == 3 ? this.dialoglist.storeCode : this.dialoglist.id || this.dialoglist.dpid,
+      type: this.imgname,
+      isCollect: this.active == 1 ? 3 : this.dialoglist.isCollect,
+    }
+  })
+},
     // 获取星巴克门店列表
     getXBKStore() {
       this.aroundlist = []

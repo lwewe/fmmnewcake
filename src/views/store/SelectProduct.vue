@@ -9,38 +9,19 @@
       <div class="topBox">
         <div class="topLeftBox">
           <div class="storeName">
-            <!-- <div class="storeIcon" v-if="!flag">
-              <img v-if="num2 == 1" class="img" src="../../assets/backimage/store1.png" alt="">
-              <img v-if="num2 == 2 && num1 != 6" class="img" src="../../assets/backimage/store4.png" alt="">
-              <img v-if="num1 == 6" class="img" src="../../assets/backimage/store6.png" alt="">
-            </div>
-            <div class="storeIcon2" v-else>
-              <img v-if="num2 == 1" class="img" src="../../assets/backimage/dingwei1.png" alt="">
-              <img v-if="num2 == 2" class="img" src="../../assets/backimage/dingwei4.png" alt="">
-            </div> -->
+           
             <div v-if="!flag" class="location">{{ productlist.name || productlist.storeName || productlist.shopName }}
             </div>
             <div v-else class="location">配送至:{{ location }}</div>
           </div>
           <div class="addressBox" v-if="!flag">
-            <!-- <span>{{ flag ? '外送' : '自取' }} </span> -->
+           
             <span class="address">{{ productlist.address || productlist.storeAddress }}</span>
           </div>
         </div>
-        <!--        <div class="topRightBox" @click="replacestore">-->
-        <!--          <div class="replacestore" :class="{replacestore6:num1==6}">-->
-        <!--            <img v-if="num2==1" class="img" src="../../assets/backimage/replacestore.png" alt="">-->
-        <!--            <img v-if="num2==2&&num1!=6" class="img" src="../../assets/backimage/replacestore4.png" alt="">-->
-        <!--            <img v-if="num1==6" class="img" src="../../assets/backimage/replacestore6.png" alt="">-->
-        <!--          </div>-->
-        <!--          <div class="replaceText">更换门店</div>-->
-        <!--        </div>-->
+         
         <div class="topRightBox" @click="replacestore" v-if="!flag">
-          <!-- <div class="replacestore" :class="{ replacestore6: num1 == 6 }">
-            <img class="img" v-if="isCollect == 3" src="../../assets/backimage/scc.png" alt="">
-            <img class="img" v-else src="../../assets/backimage/sc.png" alt="">
-          </div>
-          <div class="replaceText">{{ isCollect == 3 ? '已收藏' : '收藏' }}</div> -->
+          
         </div>
       </div>
     </div>

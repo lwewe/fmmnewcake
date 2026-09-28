@@ -32,7 +32,7 @@ const state = {
     kefu:"",
     base: "http://yxfmm.bjyxfl.com/film/#",
     Shopbase: "http://yxfmm.bjyxfl.com/fmmShop/#",
-    // fmmShop
+    // http://yxfmm.bjyxfl.com/fmmShop/#"
     // base: "http://yxfmm.bjyxfl.com/multiplex/#",
     // Shopbase: "http://yxfmm.bjyxfl.com/mall/#/index",
     // Shopbase: " http://192.168.3.9:8081/#",

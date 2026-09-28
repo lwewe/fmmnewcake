@@ -21,7 +21,24 @@ import OrderPaynx from '@/views/order/OrderPaynx.vue';
 import LocationCity from '@/views/mine/LocationCity.vue';
 // 商品列表
 import SelectProduct from '@/views/store/SelectProduct.vue';
+
+
+import SelectProductMDL from '@/views/store/SelectProductMDL.vue';
+import ProductDetailMDLNew from '@/views/store/ProductDetailMDLNew.vue';
+
+
+import SelectProductwmkdj from '@/views/store/SelectProductwmkdj.vue';
+import ProductDetailwmkdj from '@/views/store/ProductDetailwmkdj.vue';
+
+
+
+import SelectProductKDJ from '@/views/store/SelectProductKDJ.vue';
+import ProductDetailKDJ from '@/views/store/ProductDetailKDJ.vue';
+
 import SelectProductnew from '@/views/store/SelectProductnew.vue';
+
+
+
 
 
 import SelectnxProduct from '@/views/store/SelectnxProduct.vue';
@@ -36,6 +53,8 @@ import ProductDetailKFC from '@/views/store/ProductDetailKFC.vue';
 
 
 import ProductDetailMDL from '@/views/store/ProductDetailMDL.vue';
+
+
 import ProductDetailnew from '@/views/store/ProductDetailnew.vue';
 
 import ProductDetailXBK from '@/views/store/ProductDetailXBK.vue';
@@ -373,6 +392,21 @@ const routes = [
             title: '选餐',
         }
     },
+
+{
+        path: '/selectproductmdl',
+        component: SelectProductMDL,
+        meta: {
+            title: '麦当劳选餐',
+        }
+    },
+    {
+        path: '/SelectProductKDJ',
+        component: SelectProductKDJ,
+        meta: {
+            title: '肯德基选餐',
+        }
+    },
 {
         path: '/selectproductnew',
         component: SelectProductnew,
@@ -430,6 +464,42 @@ const routes = [
             title: '详情'
         }
     },
+
+     {
+        path: '/productdetailmdlnew',
+        component: ProductDetailMDLNew,
+        meta: {
+            title: '详情'
+        }
+    },
+
+    {
+        path: '/ProductDetailwmkdj',
+        component: ProductDetailwmkdj,
+        meta: {
+            title: '肯德基外卖详情'
+        }
+    }, 
+    {
+        path: '/SelectProductwmkdj',
+        component: SelectProductwmkdj,
+        meta: {
+            title: '肯德基外卖'
+        }
+    },
+
+    
+
+ {
+        path: '/productdetailkdj',
+        component: ProductDetailKDJ,
+        meta: {
+            title: '详情'
+        }
+    },
+
+
+
 {
         path: '/productdetailnew',
         component: ProductDetailnew,

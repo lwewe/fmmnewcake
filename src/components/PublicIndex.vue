@@ -5,7 +5,7 @@
       <div class="topPage">
         <!-- :class="{topPage2:num2==2,topBorder:num2==2&&num1!=6,topBorder6:num1==6,topPage7:num1==7}" -->
         <div class="leftBox" @click="godetail"
-          :class="{ w100: num1 == 6 || num1 == 4 || num1 == 5 || num1 == 7 || num1 == 8  || num1 == 3}">
+          :class="{ w100: num1 == 6 || num1 == 4 || num1 == 5 || num1 == 7 || num1 == 8 || num1 == 3 }">
           <div class="topRight">
             <div class="icon">
 
@@ -28,7 +28,7 @@
         </div>
         <!-- <div class="line" v-if="num2==1&&num1!=7"></div> -->
         <div class="leftBox " @click="goaddress"
-          :class="{ dsp: num1 == 6 || num1 == 4 || num1 == 5 || num1 == 7 || num1 == 8  || num1 == 3 }">
+          :class="{ dsp: num1 == 6 || num1 == 4 || num1 == 5 || num1 == 7 || num1 == 8 || num1 == 3 }">
           <!-- v-if="num2==1&&num1!=7" -->
           <div class="topRight">
             <div class="icon2">

@@ -74,6 +74,10 @@
           <div class="shopPriceText">配送费</div>
           <div class="price">￥{{ orderShow.flag==3?order.ship_amount:0 }}</div>
         </div>
+        <div class="shopPrice" v-if=" JSON.parse(orderShow.content).tastes_name ">
+          <div class="shopPriceText">口味</div>
+          <div class="price">{{  JSON.parse(orderShow.content).tastes_name }} </div>
+        </div>
         <div class="shopPrice">
           <div class="shopPriceText">合计</div>
           <div class="price price1">￥{{ orderShow.flag==3?order.final_amount:allPrice }}</div>
